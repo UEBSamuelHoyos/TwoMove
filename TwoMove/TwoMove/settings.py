@@ -37,12 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     # Nuestras apps
     'apps.users',
     'apps.bikes',
     'apps.stations',
     'apps.rentals',
-    # Librerías externas
+
+    # librerías externas
     'rest_framework',
 ]
 
