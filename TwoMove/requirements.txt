@@ -22,4 +22,4 @@ djangorestframework-simplejwt
 
 # trigger pipeline test
 
-#jashdjasd
+#QUYIWTEUQIWE
