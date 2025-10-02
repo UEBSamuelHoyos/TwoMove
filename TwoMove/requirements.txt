@@ -19,3 +19,6 @@ psycopg2-binary
 # Seguridad y configuración
 python-decouple
 djangorestframework-simplejwt
+
+# trigger pipeline test
+
