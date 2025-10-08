@@ -1,29 +1,32 @@
 from django import forms
 from .models import Usuario
-from django.contrib.auth.hashers import make_password
 
 class RegistroForm(forms.ModelForm):
-    contrasena = forms.CharField(widget=forms.PasswordInput, label="Contraseña")
-    confirmar_contrasena = forms.CharField(widget=forms.PasswordInput, label="Confirmar Contraseña")
+    first_name = forms.CharField(label="Nombre")
+    last_name = forms.CharField(label="Apellido")
+    password = forms.CharField(widget=forms.PasswordInput, label="Contraseña")
+    confirmar_password = forms.CharField(widget=forms.PasswordInput, label="Confirmar Contraseña")
 
     class Meta:
         model = Usuario
-        fields = ['nombre', 'apellido', 'email', 'celular', 'contrasena', 'confirmar_contrasena']
+        fields = ['first_name', 'last_name', 'email', 'celular']
 
     def clean(self):
         cleaned_data = super().clean()
-        if cleaned_data.get("contrasena") != cleaned_data.get("confirmar_contrasena"):
+        password = cleaned_data.get("password")
+        confirmar = cleaned_data.get("confirmar_password")
+        if password and confirmar and password != confirmar:
             raise forms.ValidationError("Las contraseñas no coinciden.")
         return cleaned_data
 
     def save(self, commit=True):
         usuario = super().save(commit=False)
-        usuario.contrasena_hash = make_password(self.cleaned_data["contrasena"])
+        usuario.username = usuario.email  # requerido por AbstractUser
+        usuario.set_password(self.cleaned_data["password"])  # guarda con hash
         usuario.estado = "inactivo"
         if commit:
             usuario.save()
         return usuario
-
 
 class VerificacionForm(forms.Form):
     email = forms.EmailField(label="Correo electrónico")
