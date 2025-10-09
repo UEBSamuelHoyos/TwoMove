@@ -1,32 +1,31 @@
+# apps/users/forms.py
 from django import forms
 from .models import Usuario
 
 class RegistroForm(forms.ModelForm):
-    first_name = forms.CharField(label="Nombre")
-    last_name = forms.CharField(label="Apellido")
-    password = forms.CharField(widget=forms.PasswordInput, label="Contraseña")
-    confirmar_password = forms.CharField(widget=forms.PasswordInput, label="Confirmar Contraseña")
+    contrasena = forms.CharField(widget=forms.PasswordInput, label="Contraseña")
+    confirmar_contrasena = forms.CharField(widget=forms.PasswordInput, label="Confirmar contraseña")
 
     class Meta:
         model = Usuario
-        fields = ['first_name', 'last_name', 'email', 'celular']
+        fields = ['nombre', 'apellido', 'email', 'celular', 'contrasena', 'confirmar_contrasena']
 
     def clean(self):
         cleaned_data = super().clean()
-        password = cleaned_data.get("password")
-        confirmar = cleaned_data.get("confirmar_password")
-        if password and confirmar and password != confirmar:
+        contrasena = cleaned_data.get("contrasena")
+        confirmar_contrasena = cleaned_data.get("confirmar_contrasena")
+
+        if contrasena and confirmar_contrasena and contrasena != confirmar_contrasena:
             raise forms.ValidationError("Las contraseñas no coinciden.")
         return cleaned_data
 
     def save(self, commit=True):
-        usuario = super().save(commit=False)
-        usuario.username = usuario.email  # requerido por AbstractUser
-        usuario.set_password(self.cleaned_data["password"])  # guarda con hash
-        usuario.estado = "inactivo"
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["contrasena"])  # 🔑 Hashea correctamente
         if commit:
-            usuario.save()
-        return usuario
+            user.save()
+        return user
+
 
 class VerificacionForm(forms.Form):
     email = forms.EmailField(label="Correo electrónico")
