@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Restablecer contraseña - TwoMove 🚲</title>
+  <style>
+    body {
+      background-color: #f2f6fa;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      background: #fff;
+      margin: 40px auto;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #5bc0de, #0275d8);
+      color: white;
+      padding: 25px 30px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+    }
+    .content {
+      padding: 30px;
+      color: #333;
+      line-height: 1.6;
+    }
+    .content p {
+      margin-bottom: 16px;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #0275d8;
+      color: white;
+      text-decoration: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    .btn:hover {
+      background-color: #025aa5;
+    }
+    .footer {
+      background-color: #f5f5f5;
+      padding: 15px 30px;
+      text-align: center;
+      font-size: 13px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Restablecer tu contraseña</h1>
+    </div>
+
+    <div class="content">
+      <p>Hola <strong>{{ user.nombre }}</strong>,</p>
+
+      <p>Recibiste este mensaje porque solicitaste restablecer tu contraseña en <strong>TwoMove 🚲</strong>.</p>
+
+      <p>Para crear una nueva contraseña, haz clic en el botón siguiente:</p>
+
+      <p style="text-align: center;">
+        <a href="{{ enlace }}" class="btn">Restablecer contraseña</a>
+      </p>
+
+      <p>Si no realizaste esta solicitud, ignora este mensaje. Tu cuenta seguirá siendo segura.</p>
+
+      <p>Gracias por usar <strong>TwoMove</strong>.  
+      <br>El equipo de soporte 🚀</p>
+    </div>
+
+    <div class="footer">
+      &copy; {{ year|default:"2025" }} TwoMove. Todos los derechos reservados.
+    </div>
+  </div>
+</body>
+</html>
