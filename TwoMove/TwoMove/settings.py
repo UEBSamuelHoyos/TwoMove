@@ -1,6 +1,6 @@
 """
 Django settings for TwoMove project.
-Configurado para uso con MySQL y envío de correos electrónicos (verificación de usuario).
+Configurado para uso con MySQL, autenticación personalizada por correo y envío de correos electrónicos (verificación de usuario).
 """
 
 from pathlib import Path
@@ -13,16 +13,15 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-*@tu+vrjbu2*s(=7)b7c^6oj#@yt0si6!!ontd5#w%1*&hv3_+'
-
 DEBUG = True
-
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']  # Agrega tu dominio si despliegas
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']  # Agrega tu dominio al desplegar
 
 # ========================
 # 🧩 APLICACIONES
 # ========================
 
 INSTALLED_APPS = [
+    # Django apps base
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -85,10 +84,10 @@ WSGI_APPLICATION = 'TwoMove.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'twomovedb',           # ← Cambia por el nombre de tu base de datos
-        'USER': 'root',                 # ← Usuario MySQL
-        'PASSWORD': 'sHA*1028480099',    # ← Contraseña MySQL
-        'HOST': 'localhost',            # ← o la IP/host del servidor MySQL
+        'NAME': 'twomovedb',             # ← Nombre de tu base de datos
+        'USER': 'root',                   # ← Usuario MySQL
+        'PASSWORD': 'sHA*1028480099',     # ← Contraseña MySQL
+        'HOST': 'localhost',
         'PORT': '3306',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -131,16 +130,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # 📧 CONFIGURACIÓN DE CORREO (verificación usuario)
 # ========================
 
-# Usa SMTP de Gmail o reemplaza con tu propio proveedor
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'               # Servidor SMTP
-EMAIL_PORT = 587                            # Puerto seguro TLS
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'twomoveee@gmail.com'     # ← Tu correo Gmail
-EMAIL_HOST_PASSWORD = 'wtac dfvx jhtd ycwu'        # ← Contraseña de aplicación (no la real)
+EMAIL_HOST_USER = 'twomoveee@gmail.com'
+EMAIL_HOST_PASSWORD = 'wtac dfvx jhtd ycwu'   # Contraseña de aplicación
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-# Durante desarrollo (opcional): muestra correos en consola
+# Durante desarrollo, puedes usar esta opción si no quieres enviar correos reales:
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # ========================
@@ -149,7 +147,26 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# REST Framework (opcional)
+# ========================
+# 🔐 AUTENTICACIÓN PERSONALIZADA
+# ========================
+
+# Modelo de usuario personalizado
+AUTH_USER_MODEL = 'users.Usuario'
+
+# Backend de autenticación (permite login por correo)
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+LOGIN_URL = 'users:login'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = 'users:login'
+
+# ========================
+# 🧰 REST FRAMEWORK
+# ========================
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
@@ -160,7 +177,7 @@ REST_FRAMEWORK = {
 }
 
 # ========================
-# ✅ LOGGING BÁSICO (opcional)
+# ✅ LOGGING BÁSICO
 # ========================
 
 LOGGING = {
