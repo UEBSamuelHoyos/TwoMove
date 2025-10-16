@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mediqu - Dashboard</title>
+    <link rel="stylesheet" href="../staticfiles/css/indexAdmin.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-plus"></i>
+        </div>
+        <span class="logo-text">mediqu</span>
+      </div>
+
+      <nav class="nav-menu">
+        <div class="nav-item active">
+          <i class="fas fa-th-large"></i>
+          <span>Dashboard</span>
+          <i class="fas fa-chevron-down dropdown-icon"></i>
+        </div>
+        <div class="submenu">
+          <a href="#" class="submenu-item">Dashboard Light</a>
+          <a href="#" class="submenu-item">Dashboard Dark</a>
+          <a href="#" class="submenu-item">Doctors</a>
+          <a href="#" class="submenu-item">Doctors Details</a>
+          <a href="#" class="submenu-item">Doctors Review</a>
+          <a href="#" class="submenu-item">Patient Details</a>
+        </div>
+
+        <div class="nav-item">
+          <i class="fas fa-desktop"></i>
+          <span>Apps</span>
+          <i class="fas fa-chevron-right dropdown-icon"></i>
+        </div>
+
+        <div class="nav-item">
+          <i class="fas fa-icons"></i>
+          <span>Flat Icons</span>
+          <span class="badge">NEW</span>
+        </div>
+
+        <div class="nav-item">
+          <i class="fas fa-file-alt"></i>
+          <span>CMS</span>
+          <span class="badge">NEW</span>
+          <i class="fas fa-chevron-right dropdown-icon"></i>
+        </div>
+
+        <div class="nav-item">
+          <i class="fas fa-chart-pie"></i>
+          <span>Charts</span>
+          <i class="fas fa-chevron-right dropdown-icon"></i>
+        </div>
+
+        <div class="nav-item">
+          <i class="fas fa-shopping-cart"></i>
+          <span>Bootstrap</span>
+          <i class="fas fa-chevron-right dropdown-icon"></i>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <button class="menu-toggle" id="menuToggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="page-title">Dashboard</h1>
+
+        <div class="header-actions">
+          <button class="icon-btn">
+            <i class="fas fa-moon"></i>
+          </button>
+          <button class="icon-btn">
+            <i class="fas fa-expand"></i>
+          </button>
+          <button class="icon-btn">
+            <i class="fas fa-th"></i>
+          </button>
+          <button class="icon-btn notification">
+            <i class="fas fa-bell"></i>
+            <span class="notification-badge"></span>
+          </button>
+          <div class="user-profile">
+            <div class="user-info">
+              <span class="user-name">David Morse</span>
+              <span class="user-role">ADMIN</span>
+            </div>
+            <img
+              src="https://i.pravatar.cc/150?img=12"
+              alt="User"
+              class="user-avatar"
+            />
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard Content -->
+      <div class="dashboard-content">
+        <!-- Top Row -->
+        <div class="top-row">
+          <!-- Recovered Chart -->
+          <div class="card recovered-card">
+            <div class="card-header">
+              <h3>Recovered</h3>
+              <button class="card-menu">
+                <i class="fas fa-ellipsis-h"></i>
+              </button>
+            </div>
+            <div class="stats-row">
+              <div class="stat-item">
+                <div class="stat-indicator red"></div>
+                <div>
+                  <p class="stat-label">New</p>
+                  <p class="stat-value">451</p>
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-indicator green"></div>
+                <div>
+                  <p class="stat-label">Recovered</p>
+                  <p class="stat-value">623</p>
+                </div>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="recoveredChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Stats Cards -->
+          <div class="stats-cards">
+            <div class="stat-card appointment-card">
+              <div class="stat-card-icon">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+              <div class="stat-card-content">
+                <p class="stat-card-label">Appointment</p>
+                <p class="stat-card-value">76</p>
+              </div>
+            </div>
+
+            <div class="stat-card earning-card">
+              <div class="stat-card-icon">
+                <i class="fas fa-gem"></i>
+              </div>
+              <div class="stat-card-content">
+                <p class="stat-card-label">Hospital Earning</p>
+                <p class="stat-card-value">$56K</p>
+              </div>
+            </div>
+
+            <div class="stat-card patient-card">
+              <div class="stat-card-icon">
+                <i class="fas fa-heart"></i>
+              </div>
+              <div class="stat-card-content">
+                <p class="stat-card-label">Total Patient</p>
+                <p class="stat-card-value">783K</p>
+              </div>
+            </div>
+
+            <div class="stat-card operations-card">
+              <div class="stat-card-icon">
+                <i class="fas fa-user-md"></i>
+              </div>
+              <div class="stat-card-content">
+                <p class="stat-card-label">Operations</p>
+                <p class="stat-card-value">76</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Row -->
+        <div class="bottom-row">
+          <!-- Visitors Chart -->
+          <div class="card visitors-card">
+            <div class="card-header">
+              <h3>Visitors</h3>
+              <button class="card-menu">
+                <i class="fas fa-ellipsis-h"></i>
+              </button>
+            </div>
+            <div class="chart-container">
+              <canvas id="visitorsChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Revenue Card -->
+          <div class="card revenue-card">
+            <div class="card-header">
+              <h3>Revenue</h3>
+              <select class="year-select">
+                <option>2022</option>
+                <option>2023</option>
+                <option>2024</option>
+              </select>
+            </div>
+            <div class="revenue-stats">
+              <div class="revenue-item">
+                <p class="revenue-value primary">$41,512k</p>
+                <div class="revenue-bar">
+                  <div
+                    class="revenue-progress primary"
+                    style="width: 70%"
+                  ></div>
+                </div>
+              </div>
+              <div class="revenue-item">
+                <p class="revenue-value secondary">$25,612k</p>
+                <div class="revenue-bar">
+                  <div
+                    class="revenue-progress secondary"
+                    style="width: 45%"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="../staticfiles/js/indexAdmin.js"></script>
+  </body>
+</html>
