@@ -1,0 +1,46 @@
+name: Django CI & Auto-Merge to Main
+
+on:
+  push:
+    branches:
+      - pruebas
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verificar migraciones pendientes
+        run: |
+          python manage.py makemigrations --check --dry-run
+          python manage.py migrate --noinput
+
+      - name: Ejecutar tests
+        run: |
+          python manage.py test apps.users
+
+  auto-merge:
+    needs: test
+    runs-on: ubuntu-latest
+    if: success()  # solo si el job 'test' pasó
+    steps:
+      - name: Merge automático de pruebas → main
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          from_branch: pruebas
+          target_branch: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
