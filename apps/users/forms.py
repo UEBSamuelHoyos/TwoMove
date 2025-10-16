@@ -1,8 +1,8 @@
-# apps/users/forms.py
 from django import forms
 from .models import Usuario
 
 class RegistroForm(forms.ModelForm):
+    celular = forms.CharField(required=True, label="Celular")  # 👈 Campo obligatorio
     contrasena = forms.CharField(widget=forms.PasswordInput, label="Contraseña")
     confirmar_contrasena = forms.CharField(widget=forms.PasswordInput, label="Confirmar contraseña")
 
@@ -21,7 +21,7 @@ class RegistroForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.set_password(self.cleaned_data["contrasena"])  # 🔑 Hashea correctamente
+        user.set_password(self.cleaned_data["contrasena"])  # 🔐 Hashea la contraseña
         if commit:
             user.save()
         return user

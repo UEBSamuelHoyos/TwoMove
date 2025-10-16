@@ -80,7 +80,8 @@ def login_view(request):
         if usuario is not None:
             if usuario.estado == 'activo':
                 login(request, usuario)
-                return redirect('users:dashboard')  # ✅ Ajusta al dashboard real
+                return redirect('users:login')  # Evita el NoReverseMatch temporalmente
+
             else:
                 messages.error(request, "Cuenta no verificada o sancionada.")
         else:
