@@ -26,6 +26,7 @@ jobs:
         run: |
           python manage.py makemigrations --check --dry-run
           python manage.py migrate --noinput
+          pip install pymysql
 
       - name: Ejecutar tests
         run: |
