@@ -1,6 +1,6 @@
 import stripe
 from django.conf import settings
-from payment.models import MetodoTarjeta
+from apps.payment.models import MetodoTarjeta
 from stripe import CardError, InvalidRequestError, APIConnectionError  # Stripe v13 compatible
 
 # Configura la clave secreta de Stripe
