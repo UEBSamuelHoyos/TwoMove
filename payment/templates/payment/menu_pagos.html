@@ -1,0 +1,21 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Pagos | TwoMove</title>
+    <link rel="stylesheet" href="{% static 'css/pagos.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Gestión de Pagos</h1>
+        <p>Selecciona una opción para continuar:</p>
+
+        <div class="menu">
+            <a href="{% url 'agregar_tarjeta' %}" class="btn opcion">💳 Agregar Tarjeta</a>
+            <a href="{% url 'recargar_saldo' %}" class="btn opcion">💰 Recargar Saldo</a>
+            <a href="{% url 'eliminar_tarjeta_view' %}" class="btn opcion">❌ Eliminar Tarjeta</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -15,9 +15,7 @@ from .forms import RegistroForm, VerificacionForm
 from .models import Usuario, CambioCredenciales
 
 
-# =====================================================
-# ✅ Registro de usuario
-# =====================================================
+
 def registro_view(request):
     if request.method == 'POST':
         form = RegistroForm(request.POST)
@@ -41,9 +39,7 @@ def registro_view(request):
     return render(request, 'users/registro.html', {'form': form})
 
 
-# =====================================================
-# ✅ Verificación de cuenta
-# =====================================================
+
 def verificar_cuenta_view(request):
     if request.method == 'POST':
         form = VerificacionForm(request.POST)
@@ -67,9 +63,7 @@ def verificar_cuenta_view(request):
     return render(request, 'users/verificar.html', {'form': form})
 
 
-# =====================================================
-# 🔐 Inicio de sesión
-# =====================================================
+
 def login_view(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -90,18 +84,14 @@ def login_view(request):
     return render(request, 'users/login.html')
 
 
-# =====================================================
-# 🚪 Cierre de sesión
-# =====================================================
+
 def logout_view(request):
     logout(request)
     messages.success(request, "Sesión cerrada correctamente.")
     return redirect('users:login')
 
 
-# =====================================================
-# 🔒 Recuperar contraseña
-# =====================================================
+
 def recuperar_contrasena_view(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -111,7 +101,7 @@ def recuperar_contrasena_view(request):
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             enlace = request.build_absolute_uri(f"/usuarios/restablecer/{uid}/{token}/")
 
-            # 🔹 Renderizar correo HTML
+            
             context = {
                 'user': user,
                 'enlace': enlace,
@@ -120,7 +110,7 @@ def recuperar_contrasena_view(request):
 
             html_message = render_to_string('users/email_recuperar_contrasena.html', context)
 
-            # ✉️ Enviar correo (texto plano + HTML)
+            
             send_mail(
                 subject="Restablecer contraseña - TwoMove 🚲",
                 message=f"Hola {user.nombre}, usa este enlace para restablecer tu contraseña: {enlace}",
@@ -136,9 +126,7 @@ def recuperar_contrasena_view(request):
     return render(request, 'users/recuperar_contrasena.html')
 
 
-# =====================================================
-# 🔑 Restablecer contraseña (desde el enlace del correo)
-# =====================================================
+
 def restablecer_contrasena_view(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -165,9 +153,6 @@ def restablecer_contrasena_view(request, uidb64, token):
         return redirect('users:recuperar_contrasena')
 
 
-# =====================================================
-# 📧 Recordar nombre de usuario
-# =====================================================
 def recordar_usuario_view(request):
     if request.method == 'POST':
         email = request.POST.get('email')

@@ -3,10 +3,6 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 import random
 
-# ===============================
-# 🧩 1. MANAGER PERSONALIZADO
-# ===============================
-
 class UsuarioManager(BaseUserManager):
     def create_user(self, email, nombre, apellido, password=None, **extra_fields):
         if not email:

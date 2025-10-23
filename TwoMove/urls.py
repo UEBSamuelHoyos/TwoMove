@@ -20,6 +20,9 @@ urlpatterns = [
     path('bicicletas/', include('apps.bikes.urls')),
     path('estaciones/', include('apps.stations.urls')),
     path('alquileres/', include('apps.rentals.urls')),
+    path('pagos/', include('payment.urls')),
+    path('wallet/', include('apps.wallet.urls')),
+
 ]
 
 # ========================

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Recargar Saldo</h2>
+
+<form method="POST" action="{% url 'recargar_saldo' %}">
+    {% csrf_token %}
+
+    <label for="amount">Monto a recargar (COP):</label>
+    <input type="number" step="1000" min="1000" name="amount" id="amount" required>
+
+    <label for="payment_method_id">Selecciona tu tarjeta:</label>
+    <select name="payment_method_id" id="payment_method_id" required>
+        {% for tarjeta in tarjetas %}
+            <option value="{{ tarjeta.stripe_payment_method_id }}">
+                {{ tarjeta.brand|title }} ****{{ tarjeta.last4 }} (Vence: {{ tarjeta.exp_month }}/{{ tarjeta.exp_year }})
+            </option>
+        {% empty %}
+            <option disabled selected>No tienes tarjetas registradas</option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+    <button type="submit" {% if not tarjetas %}disabled{% endif %}>Recargar ahora</button>
+</form>
+
+{% if mensaje %}
+    <div style="background-color: #d4edda; color: #155724; padding: 10px; margin-top: 20px;">
+        ✅ {{ mensaje }}
+    </div>
+{% endif %}
+
+{% if error %}
+    <div style="background-color: #f8d7da; color: #721c24; padding: 10px; margin-top: 20px;">
+        ❌ {{ error }}
+    </div>
+{% endif %}
+{% endblock %}
