@@ -7,9 +7,7 @@ y envío de correos electrónicos (verificación y recuperación de usuario).
 from pathlib import Path
 import os
 
-# ========================
-# 🔧 CONFIGURACIÓN BÁSICA
-# ========================
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -17,32 +15,28 @@ SECRET_KEY = 'django-insecure-*@tu+vrjbu2*s(=7)b7c^6oj#@yt0si6!!ontd5#w%1*&hv3_+
 DEBUG = True
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
-# ========================
-# 🧩 APLICACIONES
-# ========================
+
 
 INSTALLED_APPS = [
-    # Django apps base
-    'django.contrib.admin',
+   
+     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Apps internas
-    'apps.users.apps.UsersConfig',  # ✅ forma correcta para registrar app con su label
+    'apps.users.apps.UsersConfig',
     'apps.bikes',
     'apps.stations',
     'apps.rentals',
-
-    # Librerías externas
+    'apps.wallet.apps.WalletConfig',
+    'apps.transactions.apps.TransactionsConfig',
+    'apps.payment.apps.PaymentConfig',   # ✅ ESTA DEBE SER LA CORRECTA
     'rest_framework',
+    
 ]
 
-# ========================
-# ⚙️ MIDDLEWARE
-# ========================
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -56,11 +50,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'TwoMove.urls'
 
-# ========================
-# 🎨 TEMPLATES
-# ========================
 
-# 👇 Se agrega explícitamente la carpeta apps/users/templates
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -82,9 +72,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'TwoMove.wsgi.application'
 
-# ========================
-# 🛢️ BASE DE DATOS (MySQL)
-# ========================
+
 
 DATABASES = {
     'default': {
@@ -100,9 +88,7 @@ DATABASES = {
     }
 }
 
-# ========================
-# 🔒 VALIDACIÓN DE CONTRASEÑAS
-# ========================
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -111,18 +97,14 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# ========================
-# 🌍 INTERNACIONALIZACIÓN
-# ========================
+
 
 LANGUAGE_CODE = 'es-co'
 TIME_ZONE = 'America/Bogota'
 USE_I18N = True
 USE_TZ = True
 
-# ========================
-# 📁 ARCHIVOS ESTÁTICOS Y MEDIA
-# ========================
+
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
@@ -131,44 +113,35 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# ========================
-# 📧 CONFIGURACIÓN DE CORREO
-# ========================
+
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'twomoveee@gmail.com'
-EMAIL_HOST_PASSWORD = 'wtac dfvx jhtd ycwu'   # Contraseña de aplicación
+EMAIL_HOST_PASSWORD = 'wtac dfvx jhtd ycwu'  
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-# Para pruebas locales (si no quieres enviar correos reales)
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# ========================
-# ⚙️ CONFIGURACIONES ADICIONALES
-# ========================
+
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# ========================
-# 🔐 AUTENTICACIÓN PERSONALIZADA
-# ========================
 
-AUTH_USER_MODEL = 'users.Usuario'  # ✅ Usa el label definido en apps.py
+
+AUTH_USER_MODEL = 'users.Usuario'  
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
 LOGIN_URL = 'users:login'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/pagos/'
 LOGOUT_REDIRECT_URL = 'users:login'
 
-# ========================
-# 🧰 REST FRAMEWORK
-# ========================
+
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -179,9 +152,6 @@ REST_FRAMEWORK = {
     ],
 }
 
-# ========================
-# ✅ LOGGING BÁSICO
-# ========================
 
 LOGGING = {
     'version': 1,
@@ -191,3 +161,10 @@ LOGGING = {
     },
     'root': {'handlers': ['console'], 'level': 'INFO'},
 }
+
+
+
+STRIPE_SECRET_KEY = ''
+STRIPE_PUBLIC_KEY = ''
+
+

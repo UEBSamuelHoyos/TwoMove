@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>🗑️ Eliminar Tarjeta</h2>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+{% if tarjetas %}
+  <ul>
+    {% for tarjeta in tarjetas %}
+      <li>
+        <p><strong>{{ tarjeta.brand }}</strong> ****{{ tarjeta.last4 }} — vence {{ tarjeta.exp_month }}/{{ tarjeta.exp_year }}</p>
+        <form method="POST" action="{% url 'eliminar_tarjeta_id_view' tarjeta.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" style="background-color: red; color: white;">Eliminar</button>
+        </form>
+      </li>
+      <hr>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No tienes ninguna tarjeta registrada.</p>
+{% endif %}
+
+<a href="{% url 'menu_pagos' %}">← Volver al menú</a>
+{% endblock %}

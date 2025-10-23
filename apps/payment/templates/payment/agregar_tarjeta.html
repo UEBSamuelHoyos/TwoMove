@@ -1,0 +1,126 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Agregar Tarjeta | TwoMove</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f3f5f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #fff;
+            border-radius: 16px;
+            padding: 40px 60px;
+            text-align: center;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+            width: 400px;
+        }
+        h1 { color: #1d3557; }
+        p { color: #444; margin-bottom: 25px; }
+        #card-element {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #457b9d;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover { background: #1d3557; }
+        .mensaje { margin-top: 20px; }
+        a.volver {
+            display: block;
+            margin-top: 25px;
+            color: #457b9d;
+            text-decoration: none;
+        }
+        a.volver:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>💳 Agregar Tarjeta</h1>
+    <p>Ingresa los datos de tu tarjeta de forma segura.</p>
+
+    <form id="form-tarjeta">
+        <div id="card-element"></div>
+        <button id="btn-guardar" type="submit">Guardar Tarjeta</button>
+    </form>
+
+    <div id="mensaje" class="mensaje"></div>
+
+    <a href="{% url 'menu_pagos' %}" class="volver">⬅ Volver al menú</a>
+</div>
+
+<script>
+    // Inicializamos Stripe con la clave pública desde Django
+    const stripe = Stripe("{{ stripe_public_key }}");
+    const elements = stripe.elements();
+    const cardElement = elements.create('card', { hidePostalCode: true });
+    cardElement.mount('#card-element');
+
+    const form = document.getElementById('form-tarjeta');
+    const mensaje = document.getElementById('mensaje');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        document.getElementById('btn-guardar').disabled = true;
+
+        // Validamos la tarjeta con Stripe (SetupIntent)
+        const { setupIntent, error } = await stripe.confirmCardSetup(
+            "{{ client_secret }}", {
+                payment_method: {
+                    card: cardElement,
+                    billing_details: { name: "{{ request.user.username }}" }
+                }
+            }
+        );
+
+        if (error) {
+            mensaje.innerHTML = `<p style="color:red;">❌ ${error.message}</p>`;
+            document.getElementById('btn-guardar').disabled = false;
+        } else {
+            // Enviamos el payment_method_id al backend Django
+            fetch("{% url 'guardar_tarjeta' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({
+                    payment_method_id: setupIntent.payment_method
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.mensaje) {
+                    mensaje.innerHTML = `<p style="color:green;">✅ ${data.mensaje}</p>`;
+                } else {
+                    mensaje.innerHTML = `<p style="color:red;">❌ ${data.error}</p>`;
+                }
+                document.getElementById('btn-guardar').disabled = false;
+            })
+            .catch(err => {
+                mensaje.innerHTML = `<p style="color:red;">❌ Error de conexión con el servidor.</p>`;
+                document.getElementById('btn-guardar').disabled = false;
+            });
+        }
+    });
+</script>
+</body>
+</html>
