@@ -186,52 +186,70 @@ def recargar_saldo_view(request):
 def stripe_webhook(request):
     """
     Webhook de Stripe que recibe confirmaciones de pago.
-    Llama a los servicios de transacciones y wallet.
+    Procesa directamente la recarga en la base de datos local.
     """
+    print("🚀 Webhook recibido")
+
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
     webhook_secret = settings.STRIPE_WEBHOOK_SECRET
 
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+        print("✅ Firma de Stripe verificada correctamente")
     except (ValueError, stripe.error.SignatureVerificationError) as e:
+        print(f"❌ Error verificando webhook: {e}")
         return Response({'error': str(e)}, status=400)
 
+    # Procesar evento exitoso
     if event['type'] == 'payment_intent.succeeded':
+        print("💰 Evento: payment_intent.succeeded recibido")
         intent = event['data']['object']
+
+        # Extraer metadata
         user_id = intent['metadata'].get('user_id')
         email = intent['metadata'].get('email')
-        amount = Decimal(intent['amount']) / 100
+        amount = Decimal(intent['amount_received']) / 100
         intent_id = intent['id']
 
+        print(f"📦 Datos recibidos → user_id={user_id}, email={email}, amount={amount}, intent_id={intent_id}")
+
         try:
-            # Llamar a transactions
-            trans_resp = requests.post(
-                f"{settings.TRANSACTIONS_SERVICE_URL}/crear/",
-                headers={"Authorization": f"Bearer {settings.INTERNAL_AUTH_TOKEN}"},
-                json={
-                    "usuario_id": user_id,
-                    "tipo": "RECARGA",
-                    "monto": str(amount),
-                    "descripcion": f"Recarga desde tarjeta para {email}",
-                    "referencia_externa": intent_id
-                }
-            )
-            trans_resp.raise_for_status()
+            # --- Buscar o crear Wallet ---
+            from apps.users.models import Usuario
+            from apps.wallet.models import Wallet
+            from apps.transactions.services.transaction_service import TransactionService
 
-            # Llamar a wallet
-            wallet_resp = requests.patch(
-                f"{settings.WALLET_SERVICE_URL}/topup/",
-                headers={"Authorization": f"Bearer {settings.INTERNAL_AUTH_TOKEN}"},
-                json={
-                    "usuario_id": user_id,
-                    "monto": str(amount)
-                }
-            )
-            wallet_resp.raise_for_status()
+            usuario = Usuario.objects.filter(id=user_id).first() or Usuario.objects.filter(email=email).first()
+            if not usuario:
+                print(f"⚠️ Usuario no encontrado (id={user_id}, email={email})")
+                return Response({'error': 'Usuario no encontrado'}, status=404)
 
-        except requests.RequestException as e:
-            return Response({'error': f'Error notificando a servicios internos: {str(e)}'}, status=500)
+            wallet, creada = Wallet.objects.get_or_create(usuario=usuario)
+            if creada:
+                print(f"🪙 Wallet creada para {usuario.email} con saldo inicial {wallet.balance}")
+
+            saldo_previo = wallet.balance
+            print(f"💡 Saldo previo: {saldo_previo}")
+
+            # --- Registrar transacción ---
+            TransactionService.registrar_movimiento(
+                wallet=wallet,
+                tipo="RECARGA",
+                monto=amount,
+                descripcion=f"Recarga Stripe (Intent {intent_id})"
+            )
+
+            print(f"✅ Recarga exitosa de {amount} COP para {usuario.email}")
+
+        except Exception as e:
+            import traceback
+            print(f"❌ Error procesando recarga: {e}")
+            traceback.print_exc()
+            return Response({'error': f'Error procesando recarga: {str(e)}'}, status=500)
+
+    else:
+        print(f"ℹ️ Evento ignorado: {event['type']}")
 
     return Response({'status': 'ok'}, status=200)
 
@@ -269,6 +287,3 @@ def eliminar_tarjeta_id_view(request, tarjeta_id):
         messages.error(request, "No se encontró la tarjeta seleccionada.")
 
     return redirect('eliminar_tarjeta_view')
-
-
-

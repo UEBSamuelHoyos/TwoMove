@@ -11,6 +11,7 @@ urlpatterns = [
     
     # HTML view (formulario para usuarios)
     path('recargar-saldo/', views.recargar_saldo_view, name='recargar_saldo'),
+     path("webhook/", views.stripe_webhook, name="stripe_webhook"),
 
     # API REST (solo POST desde frontend móvil)
     path('api/recargar-saldo/', views.recargar_saldo_api, name='recargar_saldo_api'),
