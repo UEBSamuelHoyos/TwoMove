@@ -27,9 +27,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'apps.users.apps.UsersConfig',
-    'apps.bikes',
+    'apps.bikes.apps.BikesConfig',
     'apps.stations',
-    'apps.rentals',
+    'apps.rentals.apps.RentalsConfig',
     'apps.wallet.apps.WalletConfig',
     'apps.transactions.apps.TransactionsConfig',
     'apps.payment.apps.PaymentConfig',   # ✅ ESTA DEBE SER LA CORRECTA
@@ -164,7 +164,6 @@ LOGGING = {
 
 
 
-STRIPE_SECRET_KEY = ''
 STRIPE_PUBLIC_KEY = ''
-
+STRIPE_SECRET_KEY = ''
 
