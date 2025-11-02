@@ -1,53 +1,137 @@
-{% extends "base.html" %}
-{% block content %}
+{% load static %}
 
-<div class="row justify-content-center">
-  <div class="col-md-6">
-    <div class="card p-4">
-      <h3 class="text-center mb-3">Registro de Usuario</h3>
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registro - TwoMove 🚲</title>
+    <link rel="stylesheet" href="{% static 'users/css/registro.css' %}" />
+  </head>
+  <body>
+    <header class="header">
+      <nav class="nav-container">
+        <a href="{% url 'home' %}" class="logo">
+          <div class="logo-icon">
+            <img
+              src="{% static 'users/images/logo.png' %}"
+              alt="TwoMove Logo"
+              onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:45px;height:45px;background:#2cb5a0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:1.5rem;font-weight:600;\'>T</div>'"
+            />
+          </div>
+        </a>
 
-      <form method="post">
-        {% csrf_token %}
-        <div class="form-group mb-3">
-          <label for="id_nombre">Nombre</label>
-          {{ form.nombre }}
+        <div class="welcome-text">
+          Únete a nuestra comunidad.
+          <span>Empieza tu aventura con TwoMove.</span>
+        </div>
+      </nav>
+    </header>
+
+    <main class="registro-container">
+      <div class="registro-card">
+        <div class="registro-header">
+          <div class="registro-icon">
+            <img
+              src="{% static 'users/images/icono.png' %}"
+              alt="Icono Registro"
+              class="icon-img"
+            />
+          </div>
+          <h1>Crear cuenta</h1>
+          <p class="subtitle">Completa el formulario para comenzar</p>
         </div>
 
-        <div class="form-group mb-3">
-          <label for="id_apellido">Apellido</label>
-          {{ form.apellido }}
+        {% if messages %}
+        <div class="messages-container">
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
         </div>
+        {% endif %}
 
-        <div class="form-group mb-3">
-          <label for="id_email">Correo electrónico</label>
-          {{ form.email }}
+        <form
+          method="POST"
+          action="{% url 'users:registro' %}"
+          class="registro-form"
+        >
+          {% csrf_token %}
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="id_nombre">Nombre</label>
+              {{ form.nombre }}
+            </div>
+
+            <div class="form-group">
+              <label for="id_apellido">Apellido</label>
+              {{ form.apellido }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="id_email">Correo electrónico</label>
+            {{ form.email }}
+          </div>
+
+          <div class="form-group">
+            <label for="id_celular">Número de celular</label>
+            {{ form.celular }}
+          </div>
+
+          <div class="form-group">
+            <label for="id_contrasena">Contraseña</label>
+            {{ form.contrasena }}
+            <small class="form-hint">Mínimo 8 caracteres</small>
+          </div>
+
+          <div class="form-group">
+            <label for="id_confirmar_contrasena">Confirmar contraseña</label>
+            {{ form.confirmar_contrasena }}
+          </div>
+
+          <button type="submit" class="btn-registro">
+            <span>Crear mi cuenta</span>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </form>
+
+        <div class="form-footer">
+          <p>
+            ¿Ya tienes cuenta?
+            <a href="{% url 'users:login' %}" class="link-login"
+              >Inicia sesión</a
+            >
+          </p>
         </div>
-
-        <div class="form-group mb-3">
-          <label for="id_celular">Celular</label>
-          {{ form.celular }}
-        </div>
-
-        <div class="form-group mb-3">
-          <label for="id_contrasena">Contraseña</label>
-          {{ form.contrasena }}
-        </div>
-
-        <div class="form-group mb-4">
-          <label for="id_confirmar_contrasena">Confirmar contraseña</label>
-          {{ form.confirmar_contrasena }}
-        </div>
-
-        <div class="d-grid">
-          <button type="submit" class="btn btn-primary btn-block">Crear cuenta</button>
-        </div>
-      </form>
-
-      <div class="text-center mt-3">
-        <small>¿Ya tienes una cuenta? <a href="#">Inicia sesión</a></small>
       </div>
-    </div>
-  </div>
-</div>
 
-{% endblock %}
+      <div class="back-link">
+        <a href="{% url 'home' %}">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          Volver al inicio
+        </a>
+      </div>
+    </main>
+
+    <script src="{% static 'users/js/registro.js' %}"></script>
+  </body>
+</html>

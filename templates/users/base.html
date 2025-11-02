@@ -1,0 +1,141 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TwoMove - Alquiler de Bicicletas</title>
+    <link rel="stylesheet" href="{% static 'users/css/base.css' %}" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header>
+      <nav>
+        <div class="logo">
+          <div class="logo-icon">
+            <img
+              src="{% static 'users/images/logo.png' %}"
+              alt="TwoMove Logo"
+              onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:45px;height:45px;background:#2cb5a0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:1.5rem;font-weight:600;\'>T</div>'"
+            />
+          </div>
+        </div>
+        <div class="nav-buttons">
+          <a href="{% url 'users:login' %}" class="btn btn-login"
+            >Iniciar sesión</a
+          >
+          <a href="{% url 'users:registro' %}" class="btn btn-register"
+            >Registrarse</a
+          >
+        </div>
+      </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-text">
+          <h1>
+            Alquila tu bicicleta<br /><span class="highlight"
+              >cuando quieras</span
+            >
+          </h1>
+          <p>
+            Reserva, recarga saldo y empieza tu viaje. Sistema de alquiler de
+            bicicletas fácil, rápido y seguro.
+          </p>
+          <a
+            href="{% url 'users:registro' %}"
+            class="btn btn-register"
+            style="padding: 0.9rem 2rem; font-size: 1.05rem"
+            >Comenzar ahora</a
+          >
+        </div>
+        <div class="hero-image">
+          <img
+            src="{% static 'users/images/ciclista.png' %}"
+            alt="Ciclista TwoMove"
+            onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'font-size:12rem;opacity:0.9;\'>🚴</div>'"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services">
+      <h2>¿Qué puedes hacer en TwoMove?</h2>
+      <div class="service-cards">
+        <div class="service-card">
+          <div class="service-icon">🚲</div>
+          <h3>Reserva tu bicicleta</h3>
+          <p>
+            Elige el modelo que prefieras y reserva con anticipación o en el
+            momento
+          </p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">💳</div>
+          <h3>Recarga saldo</h3>
+          <p>
+            Agrega saldo a tu cuenta de forma segura y rápida para tus viajes
+          </p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">📍</div>
+          <h3>Inicia tu viaje</h3>
+          <p>Desbloquea la bicicleta y comienza a pedalear por donde quieras</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">📊</div>
+          <h3>Historial de viajes</h3>
+          <p>Revisa todos tus viajes realizados, tiempo y costos</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="how-it-works">
+      <div class="how-content">
+        <h2>¿Cómo funciona?</h2>
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <h3>Regístrate</h3>
+            <p>Crea tu cuenta en minutos</p>
+          </div>
+
+          <div class="step">
+            <div class="step-number">2</div>
+            <h3>Recarga saldo</h3>
+            <p>Agrega dinero a tu cuenta</p>
+          </div>
+
+          <div class="step">
+            <div class="step-number">3</div>
+            <h3>Reserva</h3>
+            <p>Elige tu bicicleta disponible</p>
+          </div>
+
+          <div class="step">
+            <div class="step-number">4</div>
+            <h3>Pedalea</h3>
+            <p>Disfruta tu viaje</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <p>&copy; 2025 TwoMove. Todos los derechos reservados.</p>
+      <p style="margin-top: 0.5rem; font-size: 0.85rem">
+        Movilidad sostenible para todos 🌱
+      </p>
+    </footer>
+
+    <script src="{% static 'users/js/base.js' %}"></script>
+  </body>
+</html>

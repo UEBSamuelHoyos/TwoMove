@@ -1,0 +1,420 @@
+/* ===========================
+   🌿 BASE
+=========================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ========================
+   🧭 HEADER (TAMAÑOS IGUALES AL LOGIN)
+======================== */
+.header {
+    background: linear-gradient(90deg, #ffffff 0%, #f0fdf4 100%);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 2px solid #bbf7d0;
+    animation: fadeDown 0.5s ease;
+    padding: 1rem 0;
+}
+
+@keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2d3748;
+    text-decoration: none;
+}
+
+.logo-icon {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-icon img {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+}
+
+.welcome-text {
+    font-size: 0.95rem;
+    color: #166534;
+    text-align: right;
+    font-weight: 500;
+    line-height: 1.4;
+    max-width: 400px;
+    background: rgba(187, 247, 208, 0.45);
+    padding: 0.6rem 1rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.12);
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+}
+
+.welcome-text:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(34, 197, 94, 0.25);
+}
+
+.welcome-text span {
+    display: block;
+    color: #15803d;
+    font-size: 0.9rem;
+    margin-top: 2px;
+}
+
+/* ===========================
+   💳 CONTENEDOR REGISTRO
+=========================== */
+.registro-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 8rem 2rem 2rem;
+}
+
+/* ===========================
+   🧾 TARJETA REGISTRO
+=========================== */
+.registro-card {
+    background: linear-gradient(145deg, #ffffff 0%, #fefefe 100%);
+    border-radius: 20px;
+    padding: 2.5rem 3rem 3rem;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 15px 40px rgba(34, 197, 94, 0.12);
+    animation: fadeInUp 0.6s ease;
+    border: 1px solid rgba(187, 247, 208, 0.3);
+}
+
+@keyframes fadeInUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(25px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+/* ===========================
+   💚 HEADER DE LA TARJETA
+=========================== */
+.registro-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.registro-icon {
+    width: 75px;
+    height: 75px;
+    margin: 0 auto 1rem;
+    background: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(34, 197, 94, 0.25);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.icon-img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+}
+
+.registro-card h1 {
+    color: #14532d;
+    font-size: 1.9rem;
+    margin-bottom: 0.6rem;
+    font-weight: 700;
+}
+
+.subtitle {
+    color: #16a34a;
+    font-size: 0.95rem;
+    font-weight: 400;
+}
+
+/* ===========================
+   📋 FORMULARIO
+=========================== */
+.registro-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.3rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    background: #fafafa;
+    font-size: 0.98rem;
+    transition: all 0.3s ease;
+    color: #1e293b;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #22c55e;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+    transform: translateY(-1px);
+}
+
+.form-group input::placeholder {
+    color: #94a3b8;
+}
+
+.form-hint {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: 0.4rem;
+}
+
+/* ===========================
+   🚀 BOTÓN REGISTRO
+=========================== */
+.btn-registro {
+    width: 100%;
+    padding: 1.1rem;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.35);
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-registro:hover {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(34, 197, 94, 0.45);
+}
+
+.btn-registro:active {
+    transform: translateY(-1px);
+}
+
+.btn-registro svg {
+    transition: transform 0.3s ease;
+}
+
+.btn-registro:hover svg {
+    transform: translateX(3px);
+}
+
+/* ===========================
+   🔗 FOOTER DEL FORMULARIO
+=========================== */
+.form-footer {
+    text-align: center;
+    margin-top: 1.8rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.form-footer p {
+    color: #475569;
+    font-size: 0.92rem;
+}
+
+.link-login {
+    color: #16a34a;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.link-login:hover {
+    color: #15803d;
+    text-decoration: underline;
+}
+
+/* ===========================
+   ⚠️ MENSAJES
+=========================== */
+.messages-container {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    padding: 0.9rem 1rem;
+    border-radius: 10px;
+    margin-bottom: 0.8rem;
+    font-size: 0.9rem;
+}
+
+.alert-success {
+    background: #d1fae5;
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.alert-danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.alert-warning {
+    background: #fef3c7;
+    color: #92400e;
+    border-left: 4px solid #f59e0b;
+}
+
+/* ========================
+   ↩️ ENLACE VOLVER
+======================== */
+.back-link {
+    margin-top: 1.8rem;
+    text-align: center;
+}
+
+.back-link a {
+    color: #475569;
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.back-link a:hover {
+    color: #15803d;
+}
+
+.back-link svg {
+    transition: transform 0.2s ease;
+}
+
+.back-link a:hover svg {
+    transform: translateX(-3px);
+}
+
+/* ===========================
+   📱 RESPONSIVO
+=========================== */
+@media (max-width: 768px) {
+    .nav-container {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .welcome-text {
+        max-width: 100%;
+        font-size: 0.9rem;
+        text-align: center;
+        line-height: 1.5;
+        background: rgba(187, 247, 208, 0.4);
+        padding: 0.7rem 1rem;
+        box-shadow: none;
+    }
+
+    .welcome-text span {
+        font-size: 0.85rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .registro-card {
+        padding: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-text {
+        display: none;
+    }
+
+    .logo-icon img {
+        width: 110px;
+    }
+
+    .registro-card {
+        padding: 1.8rem;
+    }
+
+    .registro-card h1 {
+        font-size: 1.6rem;
+    }
+
+    .btn-registro {
+        font-size: 1rem;
+        padding: 1rem;
+    }
+}

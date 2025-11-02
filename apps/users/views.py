@@ -14,6 +14,10 @@ from django.utils import timezone
 from .forms import RegistroForm, VerificacionForm
 from .models import Usuario, CambioCredenciales
 
+from django.shortcuts import render
+
+def home_view(request):
+    return render(request, 'users/base.html')
 
 
 def registro_view(request):
@@ -26,13 +30,13 @@ def registro_view(request):
             # Enviar correo con código de verificación
             send_mail(
                 subject="Código de verificación - TwoMove 🚲",
-                message=f"Tu código de verificación es: {usuario.codigo_verificacion}",
+                message=f"Hola! Tu código de verificación es: {usuario.codigo_verificacion}",
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[usuario.email],
                 fail_silently=False,
             )
 
-            messages.success(request, "Cuenta creada. Revisa tu correo para verificarla.")
+            messages.success(request, "Cuenta creada.")
             return redirect('users:verificar_cuenta')
     else:
         form = RegistroForm()
