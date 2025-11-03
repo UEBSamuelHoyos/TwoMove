@@ -1,6 +1,7 @@
-from django.urls import path
-from . import views
+from rest_framework.routers import DefaultRouter
+from .views import BikeViewSet
 
-urlpatterns = [
-    path('', views.index, name='bikes_index'),
-]
+router = DefaultRouter()
+router.register(r'bikes', BikeViewSet, basename='bike')
+
+urlpatterns = router.urls

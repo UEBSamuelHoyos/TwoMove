@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva de Bicicletas - MVP</title>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background: #f6f6f6;
+            padding: 40px;
+            color: #333;
+        }
+        h1 {
+            color: #0074D9;
+            text-align: center;
+        }
+        .container {
+            max-width: 520px;
+            background: white;
+            margin: 0 auto;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        select, input, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #0074D9;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #005fa3;
+        }
+        #resultado {
+            margin-top: 25px;
+            background: #f0f8ff;
+            border-left: 5px solid #0074D9;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .disponible {
+            color: green;
+            font-weight: bold;
+        }
+        .agotado {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚲 Sistema de Bicicletas Compartidas</h1>
+
+    <div class="container">
+        <label for="estacion">Selecciona estación de origen</label>
+        <select id="estacion"></select>
+
+        <label for="fecha">Fecha de la reserva</label>
+        <input type="date" id="fecha" required>
+
+        <label for="hora">Hora de inicio</label>
+        <input type="time" id="hora" required>
+
+        <label for="tipo">Tipo de bicicleta</label>
+        <select id="tipo">
+            <option value="electric">Eléctrica</option>
+            <option value="manual">Convencional</option>
+        </select>
+
+        <label for="tipo_viaje">Tipo de viaje</label>
+        <select id="tipo_viaje">
+            <option value="ultima_milla">Última Milla (45 min máx)</option>
+            <option value="recorrido_largo">Recorrido Largo (75 min máx)</option>
+        </select>
+
+        <label for="metodo">Método de pago</label>
+        <select id="metodo">
+            <option value="wallet">Saldo en App</option>
+            <option value="card">Tarjeta de Crédito</option>
+        </select>
+
+        <button id="reservar">Reservar Bicicleta</button>
+
+        <div id="resultado"></div>
+    </div>
+
+    <script>
+        // 🚦 Cargar estaciones al iniciar
+        async function cargarEstaciones() {
+            const select = document.getElementById("estacion");
+            const resp = await fetch("/estaciones/stations/");
+            const data = await resp.json();
+
+            data.forEach(est => {
+                const option = document.createElement("option");
+                option.value = est.id;
+
+                const texto = `${est.nombre} — 🟢 ${est.disponibles_electricas} eléctricas / ⚙️ ${est.disponibles_mecanicas} mecánicas`;
+                option.textContent = texto;
+
+                if (est.total_disponibles === 0) {
+                    option.disabled = true;
+                    option.textContent += " (Agotada)";
+                }
+
+                select.appendChild(option);
+            });
+        }
+
+        // 🚴‍♂️ Crear reserva
+        async function crearReserva() {
+            const estacion = document.getElementById("estacion").value;
+            const tipo = document.getElementById("tipo").value;
+            const tipoViaje = document.getElementById("tipo_viaje").value;
+            const metodo = document.getElementById("metodo").value;
+            const fecha = document.getElementById("fecha").value;
+            const hora = document.getElementById("hora").value;
+
+            if (!estacion || !fecha || !hora) {
+                alert("Por favor completa todos los campos antes de reservar.");
+                return;
+            }
+
+            const body = {
+                estacion_origen_id: estacion,
+                tipo_bicicleta: tipo,
+                tipo_viaje: tipoViaje,
+                metodo_pago: metodo,
+                fecha_reserva: fecha,
+                hora_reserva: hora
+            };
+
+            const resp = await fetch("/alquileres/api/rentals/reserve/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken()
+                },
+                body: JSON.stringify(body)
+            });
+
+            const resultado = document.getElementById("resultado");
+            resultado.style.display = "block";
+
+            if (resp.ok) {
+                const data = await resp.json();
+                resultado.innerHTML = `
+                    <h3>✅ Reserva Confirmada</h3>
+                    <p><b>Fecha:</b> ${fecha} — ${hora}</p>
+                    <p><b>Bicicleta:</b> ${data.bike_serial_reservada}</p>
+                    <p><b>Dock:</b> ${data.bike_dock_reservado || "N/A"}</p>
+                    <p><b>Código desbloqueo:</b> ${data.codigo_desbloqueo}</p>
+                    <p><b>Método de pago:</b> ${data.metodo_pago}</p>
+                `;
+            } else {
+                const error = await resp.json();
+                resultado.innerHTML = `<h3>⚠️ Error:</h3><p>${error.detail || "No se pudo completar la reserva."}</p>`;
+            }
+        }
+
+        function getCSRFToken() {
+            const cookieValue = document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)');
+            return cookieValue ? cookieValue.pop() : "";
+        }
+
+        document.getElementById("reservar").addEventListener("click", crearReserva);
+        cargarEstaciones();
+    </script>
+</body>
+</html>

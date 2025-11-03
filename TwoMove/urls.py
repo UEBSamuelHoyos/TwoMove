@@ -25,7 +25,11 @@ urlpatterns = [
     path('estaciones/', include('apps.stations.urls')),
     path('alquileres/', include('apps.rentals.urls')),
     path('pagos/', include('apps.payment.urls')),
+    path('transactions/', include('apps.transactions.urls')),
     path('wallet/', include('apps.wallet.urls')),
+    path("payment/", include("apps.payment.urls")),
+    
+
 
 ]
 
