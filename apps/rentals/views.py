@@ -3,6 +3,12 @@ from django.views.generic import TemplateView
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.db import connection
+from django.views import View
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -10,50 +16,45 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Rental
+from .serializers import RentalSerializer
 from .services.reservation_service import ReservationService
 from .services.cancellation_service import CancellationService
-from .serializers import RentalSerializer
+from .services.trip_start_service import TripStartService
+from .services.trip_end_service import TripEndService
 
 
 # ---------------------------------------------------------------
-# 1️⃣ Vista principal (pantalla base)
+# 1️⃣ Vista principal
 # ---------------------------------------------------------------
 def index(request):
-    """Página inicial del módulo de arrendamientos."""
     return render(request, "rentals/index.html")
 
 
 # ---------------------------------------------------------------
-# 2️⃣ Vista HTML de prueba para el flujo de reserva
+# 2️⃣ Prueba HTML reserva
 # ---------------------------------------------------------------
 class ReservationTestView(TemplateView):
-    """Muestra el formulario HTML para probar el flujo de reserva."""
     template_name = "rentals/reservation_test.html"
 
 
 # ---------------------------------------------------------------
-# 3️⃣ Vista HTML para probar cancelación desde navegador
+# 3️⃣ Prueba HTML cancelación
 # ---------------------------------------------------------------
 class CancelReservationTestView(TemplateView):
-    """Muestra el formulario HTML para cancelar reservas mediante el endpoint cancel_general."""
     template_name = "rentals/cancel_reservation_test.html"
 
 
 # ---------------------------------------------------------------
-# 4️⃣ Vista HTML (manual) para cancelar una reserva específica por ID
+# 4️⃣ Cancelar reserva específica
 # ---------------------------------------------------------------
 @login_required
 def cancel_reservation_view(request, rental_id):
-    """Página HTML para cancelar una reserva existente (método clásico por ID)."""
-    rental = get_object_or_404(Rental, pk=rental_id, usuario=request.user)
-
+    rental = get_object_or_404(Rental, pk=rental_id, usuario_id=request.user.pk)
     if request.method == "POST":
         reason = request.POST.get("reason", "")
         try:
             result = CancellationService.cancel_reservation(
-                user=request.user,
-                rental_id=rental_id,
-                reason=reason
+                user=request.user, rental_id=rental_id, reason=reason
             )
             messages.success(request, f"Reserva #{result['rental_id']} cancelada exitosamente.")
             return redirect("rentals:cancel_reservation", rental_id=rental.id)
@@ -64,10 +65,16 @@ def cancel_reservation_view(request, rental_id):
 
 
 # ---------------------------------------------------------------
-# 5️⃣ API REST principal para gestionar arrendamientos
+# 5️⃣ Prueba HTML inicio de viaje
+# ---------------------------------------------------------------
+class StartTripTestView(TemplateView):
+    template_name = "rentals/start_trip_test.html"
+
+
+# ---------------------------------------------------------------
+# 6️⃣ API principal arrendamientos
 # ---------------------------------------------------------------
 class RentalViewSet(viewsets.ModelViewSet):
-    """API principal para gestionar arrendamientos (crear, cancelar, listar)."""
     queryset = Rental.objects.all()
     serializer_class = RentalSerializer
     permission_classes = [IsAuthenticated]
@@ -75,21 +82,19 @@ class RentalViewSet(viewsets.ModelViewSet):
     # ----------------------------
     # Crear reserva
     # ----------------------------
-    @action(detail=False, methods=["post"], url_path="reserve", permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=["post"], url_path="reserve")
     def reserve(self, request):
-        """Crea una nueva reserva usando el servicio de negocio."""
         usuario = request.user
         data = request.data
-
         try:
             rental = ReservationService.create_reservation(
                 usuario=usuario,
                 estacion_origen_id=data.get("estacion_origen_id"),
+                estacion_destino_id=data.get("estacion_destino_id"),
                 tipo_bicicleta=data.get("tipo_bicicleta"),
                 tipo_viaje=data.get("tipo_viaje"),
                 metodo_pago=data.get("metodo_pago"),
             )
-
             return Response({
                 "status": "ok",
                 "rental_id": rental.id,
@@ -99,22 +104,60 @@ class RentalViewSet(viewsets.ModelViewSet):
                 "metodo_pago": rental.metodo_pago,
                 "fecha_reserva": getattr(rental, "fecha_reserva", None),
                 "hora_reserva": getattr(rental, "hora_reserva", None),
+                "estacion_origen": getattr(rental.estacion_origen, "nombre", ""),
+                "estacion_destino": getattr(rental.estacion_destino, "nombre", ""),
             }, status=status.HTTP_201_CREATED)
-
         except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    # ----------------------------
+    # Iniciar viaje
+    # ----------------------------
+    @action(detail=False, methods=["post"], url_path="start_by_user")
+    def start_by_user(self, request):
+        codigo = (request.data.get("codigo") or "").strip()
+        if not codigo:
+            return Response({"detail": "Debe ingresar el código."}, status=status.HTTP_400_BAD_REQUEST)
+        usuario = request.user
+        try:
+            result = TripStartService.start_trip_by_user(user_pk=usuario.pk, codigo=codigo)
+            return Response(result, status=status.HTTP_200_OK)
+        except Exception as e:
+            print("❌ Error inicio de viaje:", str(e))
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    # ----------------------------
+    # ✅ Finalizar viaje
+    # ----------------------------
+    @action(detail=False, methods=["post"], url_path="end_trip")
+    def end_trip(self, request):
+        """
+        Finaliza el viaje activo y genera factura.
+        Body: { "rental_id": int, "estacion_destino_id": int (opcional) }
+        """
+        usuario = request.user
+        data = request.data
+        rental_id = data.get("rental_id")
+        estacion_destino_id = data.get("estacion_destino_id")
+
+        if not rental_id:
+            return Response({"detail": "Debe enviar rental_id."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            result = TripEndService.end_trip(usuario, rental_id, estacion_destino_id)
+            return Response(result, status=status.HTTP_200_OK)
+        except Exception as e:
+            print("❌ Error finalizando viaje:", e)
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     # ----------------------------
     # Cancelar reserva por ID
     # ----------------------------
-    @action(detail=True, methods=["post"], url_path="cancel", permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=["post"], url_path="cancel")
     def cancel(self, request, pk=None):
-        """Cancela una reserva específica por ID."""
         try:
             result = CancellationService.cancel_reservation(
-                user=request.user,
-                rental_id=pk,
-                reason=request.data.get("reason", "")
+                user=request.user, rental_id=pk, reason=request.data.get("reason", "")
             )
             return Response(result, status=status.HTTP_200_OK)
         except Exception as e:
@@ -123,48 +166,33 @@ class RentalViewSet(viewsets.ModelViewSet):
     # ----------------------------
     # Cancelar reserva general
     # ----------------------------
-    @action(detail=False, methods=["post"], url_path="cancel_general", permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=["post"], url_path="cancel_general")
     def cancel_general(self, request):
-        """Cancela una reserva sin usar el ID en la URL (se envía en el body JSON)."""
         usuario = request.user
         data = request.data
         rental_id = data.get("rental_id")
         reason = data.get("reason", "")
-
         if not rental_id:
-            return Response({"detail": "Debe enviar 'rental_id'."}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({"detail": "Debe enviar rental_id."}, status=status.HTTP_400_BAD_REQUEST)
         try:
             result = CancellationService.cancel_reservation(
-                user=usuario,
-                rental_id=rental_id,
-                reason=reason
+                user=usuario, rental_id=rental_id, reason=reason
             )
             return Response(result, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     # ----------------------------
-    # Listar reservas activas del usuario autenticado
+    # Mis reservas
     # ----------------------------
-    @action(detail=False, methods=["get"], url_path="mis_reservas", permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=["get"], url_path="mis_reservas")
     def mis_reservas(self, request):
-        """
-        Devuelve las reservas activas del usuario autenticado.
-        Compatible con modelo de usuario sin campo 'id'.
-        """
-        usuario = request.user
-        print(f"🔍 Usuario autenticado: {usuario}")
-
-        # ✅ Usa relación directa (no .id)
-        reservas = Rental.objects.filter(
-            usuario=usuario
-        ).filter(
-            Q(estado__iexact="reservado") | Q(estado__iexact="activo")
-        ).order_by("-creado_en")
-
-        print(f"📦 Reservas encontradas: {reservas.count()}")
-
+        usuario_pk = getattr(request.user, "pk", None)
+        reservas = (
+            Rental.objects.filter(usuario_id=usuario_pk)
+            .filter(Q(estado__iexact="reservado") | Q(estado__iexact="activo"))
+            .order_by("-creado_en")
+        )
         data = [
             {
                 "id": r.pk,
@@ -175,9 +203,51 @@ class RentalViewSet(viewsets.ModelViewSet):
                 "metodo_pago": r.metodo_pago,
                 "bike_serial_reservada": r.bike_serial_reservada or "",
                 "estacion_origen": getattr(r.estacion_origen, "nombre", "") if r.estacion_origen else "",
+                "estacion_destino": getattr(r.estacion_destino, "nombre", "") if hasattr(r, "estacion_destino") and r.estacion_destino else "",
                 "costo_estimado": str(r.costo_estimado or ""),
             }
             for r in reservas
         ]
-
         return Response(data, status=status.HTTP_200_OK)
+
+
+# ---------------------------------------------------------------
+# 7️⃣ Finalizar viaje (HTML)
+# ---------------------------------------------------------------
+@method_decorator(login_required, name='dispatch')
+class TripEndPageView(View):
+    """Renderiza la página visual para finalizar el viaje"""
+    def get(self, request):
+        return render(request, "rentals/trip_end.html")
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(login_required, name='dispatch')
+class TripEndAPI(View):
+    """Endpoint API para cerrar el viaje y generar factura"""
+    def post(self, request):
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+            estacion_destino_id = data.get("estacion_destino_id")
+            rental_id = data.get("rental_id")
+
+            if not rental_id:
+                return JsonResponse({"error": "Debe especificar el ID del viaje."}, status=400)
+
+            resultado = TripEndService.end_trip(
+                usuario=request.user,
+                rental_id=rental_id,
+                estacion_destino_id=estacion_destino_id,
+            )
+
+            return JsonResponse({
+                "success": True,
+                "mensaje": resultado["mensaje"],
+                "costo_total": resultado["costo_total"],
+                "duracion_minutos": resultado["duracion_minutos"],
+                "estado_bicicleta": resultado["estado_bicicleta"],
+            }, status=200)
+
+        except Exception as e:
+            print(f"❌ Error al finalizar viaje: {e}")
+            return JsonResponse({"error": str(e)}, status=400)

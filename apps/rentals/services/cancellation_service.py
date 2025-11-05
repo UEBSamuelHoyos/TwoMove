@@ -1,6 +1,8 @@
-# apps/rentals/services/cancellation_service.py
 from django.db import transaction
 from django.utils import timezone
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.conf import settings
 from decimal import Decimal
 
 from apps.rentals.models import Rental
@@ -15,6 +17,7 @@ class CancellationService:
     - Verifica que la reserva pertenezca al usuario autenticado.
     - Permite cancelar solo si la reserva está en estado 'reservado'.
     - Procesa reembolsos si el pago fue con wallet o stripe.
+    - Envía notificación por correo electrónico.
     """
 
     @staticmethod
@@ -29,24 +32,24 @@ class CancellationService:
         :return: dict con información de la cancelación
         """
         try:
-            rental = Rental.objects.select_related("usuario").get(pk=rental_id, usuario=user)
+            rental = Rental.objects.select_related("usuario", "bike", "estacion_origen").get(
+                pk=rental_id, usuario=user
+            )
         except Rental.DoesNotExist:
             raise ValueError("No se encontró la reserva o no pertenece a este usuario.")
 
-        # ✅ Normalizar estado
+        # Validar estado
         estado_actual = (rental.estado or "").lower()
-
-        # Solo permitir cancelar si está reservada
         if estado_actual not in ["reservado"]:
             raise ValueError("Esta reserva no puede ser cancelada porque ya fue iniciada o finalizada.")
 
-        # ✅ Actualizar estado y registrar cancelación
+        # Actualizar estado y registrar cancelación
         rental.estado = "cancelado"
         rental.hora_fin = timezone.now()
         rental.actualizado_en = timezone.now()
         rental.save(update_fields=["estado", "hora_fin", "actualizado_en"])
 
-        # ✅ Procesar reembolso si aplica
+        # Procesar reembolso si aplica
         refund_amount = Decimal(rental.costo_estimado or 0)
 
         if refund_amount > 0:
@@ -58,13 +61,12 @@ class CancellationService:
                     monto=refund_amount,
                     descripcion=f"Reembolso por cancelación de reserva #{rental.id}"
                 )
-
             elif rental.metodo_pago == "stripe":
-                # 🔹 Aquí podrías implementar refund real si tienes payment_intent_id
-                # import stripe
-                # stripe.api_key = settings.STRIPE_SECRET_KEY
-                # stripe.Refund.create(payment_intent=rental.stripe_payment_intent_id)
+                # Aquí podrías implementar refund real si tienes payment_intent_id
                 pass
+
+        # 📩 Enviar correo de notificación
+        CancellationService._enviar_correo_cancelacion(user, rental, reason)
 
         print(f"❌ Reserva #{rental.id} cancelada correctamente por {user.email}")
 
@@ -77,3 +79,40 @@ class CancellationService:
             "cancelled_at": rental.hora_fin.strftime("%Y-%m-%d %H:%M:%S"),
             "reason": reason or "Sin motivo especificado",
         }
+
+    # -----------------------------------------------------------
+    # 📧 Envío de correo de cancelación
+    # -----------------------------------------------------------
+    @staticmethod
+    def _enviar_correo_cancelacion(usuario, rental, motivo=""):
+        """
+        Envía un correo electrónico al usuario confirmando la cancelación de su reserva.
+        Usa el template: rentals/cancellation_confirmed.html
+        """
+        try:
+            html_content = render_to_string("rentals/reservation_cancelled.html", {
+                "usuario": usuario,
+                "user": usuario,  # compatibilidad con {{ user }} en el template
+                "fecha": rental.hora_fin.strftime("%Y-%m-%d") if rental.hora_fin else "",
+                "hora": rental.hora_fin.strftime("%H:%M") if rental.hora_fin else "",
+                "estacion": rental.estacion_origen.nombre if rental.estacion_origen else "Desconocida",
+                "bicicleta": rental.bike_serial_reservada or "N/A",
+                "codigo": rental.codigo_desbloqueo or "N/A",
+                "costo": f"${rental.costo_estimado:,.0f}" if rental.costo_estimado else "Sin costo",
+                "motivo": motivo,
+                "SITE_NAME": "TwoMove",
+                "SITE_URL": "https://twomove.co",
+            })
+
+            subject = f"❌ Reserva #{rental.id} cancelada - TwoMove"
+            from_email = settings.DEFAULT_FROM_EMAIL
+            to_email = [usuario.email]
+
+            email = EmailMultiAlternatives(subject, "", from_email, to_email)
+            email.attach_alternative(html_content, "text/html")
+            email.send(fail_silently=False)
+
+            print(f"📩 Correo de cancelación enviado correctamente a {usuario.email}")
+
+        except Exception as e:
+            print(f"⚠️ Error al enviar correo de cancelación: {e}")

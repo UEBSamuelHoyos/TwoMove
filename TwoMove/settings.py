@@ -32,7 +32,8 @@ INSTALLED_APPS = [
     'apps.rentals.apps.RentalsConfig',
     'apps.wallet.apps.WalletConfig',
     'apps.transactions.apps.TransactionsConfig',
-    'apps.payment.apps.PaymentConfig',   # ✅ ESTA DEBE SER LA CORRECTA
+    'apps.iot.apps.IotConfig',
+    'apps.payment.apps.PaymentConfig',   
     'rest_framework',
     
 ]

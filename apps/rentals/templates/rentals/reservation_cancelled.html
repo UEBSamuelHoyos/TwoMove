@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reserva Cancelada - TwoMove</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background-color: #f4f6f8;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 30px;
+    }
+    .header {
+      text-align: center;
+      background-color: #dc3545;
+      color: white;
+      padding: 20px;
+      border-radius: 12px 12px 0 0;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+    .content {
+      margin-top: 20px;
+      line-height: 1.6;
+    }
+    .card {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      border: 1px solid #e0e0e0;
+      margin: 15px 0;
+    }
+    .footer {
+      text-align: center;
+      font-size: 13px;
+      color: #777;
+      margin-top: 20px;
+      border-top: 1px solid #ddd;
+      padding-top: 15px;
+    }
+    .code {
+      display: inline-block;
+      background: #dc3545;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 16px;
+      letter-spacing: 2px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>❌ Reserva cancelada</h1>
+    </div>
+
+    <div class="content">
+      <p>Hola <strong>{{ usuario.nombre|default:usuario.email }}</strong>,</p>
+      <p>Lamentamos informarte que tu reserva ha sido cancelada exitosamente.</p>
+
+      <div class="card">
+        <p><strong>📅 Fecha:</strong> {{ fecha }} — {{ hora }}</p>
+        <p><strong>📍 Estación de origen:</strong> {{ estacion }}</p>
+        <p><strong>🚲 Bicicleta:</strong> {{ bicicleta }}</p>
+        <p><strong>🔐 Código de desbloqueo:</strong> <span class="code">{{ codigo }}</span></p>
+        <p><strong>💰 Reembolso:</strong> {{ costo }}</p>
+      </div>
+
+      {% if motivo %}
+      <p><strong>📝 Motivo:</strong> {{ motivo }}</p>
+      {% endif %}
+
+      <p>Si esta cancelación fue por error, puedes realizar una nueva reserva desde nuestra aplicación o sitio web.</p>
+
+      <div class="footer">
+        <p>Gracias por confiar en <strong>{{ SITE_NAME }}</strong> 🚴‍♂️</p>
+        <p><a href="{{ SITE_URL }}">{{ SITE_URL }}</a></p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

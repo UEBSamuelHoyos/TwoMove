@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+  <body style="font-family:Arial,sans-serif;color:#333;background-color:#f9f9f9;padding:20px;">
+    <div style="max-width:600px;margin:auto;background:white;border-radius:10px;padding:20px;box-shadow:0 0 10px rgba(0,0,0,0.1)">
+      <h2 style="color:#28a745;">🚲 {{ SITE_NAME }} – Tu viaje ha comenzado</h2>
+
+      <p>Hola {{ usuario.nombre|default:usuario.email }},</p>
+      <p>Tu viaje ha sido iniciado correctamente. A continuación los detalles:</p>
+
+      <ul style="line-height:1.6;">
+        <li><b>Hora de inicio:</b> {{ hora_inicio }}</li>
+        <li><b>Bicicleta:</b> {{ bicicleta }}</li>
+        <li><b>Estación origen:</b> {{ estacion }}</li>
+      </ul>
+
+      <p>¡Disfruta tu recorrido con {{ SITE_NAME }}! 🚴‍♂️</p>
+      <hr>
+      <p style="font-size:13px;color:#777;">Gracias por usar {{ SITE_NAME }} – Sistema de Movilidad Urbana</p>
+    </div>
+  </body>
+</html>
