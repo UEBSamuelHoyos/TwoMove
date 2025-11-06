@@ -57,8 +57,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, 'templates'),                     # Carpeta global (opcional)
-            os.path.join(BASE_DIR, 'apps', 'users', 'templates'),    # ✅ Ruta exacta donde está recuperar_contrasena.html
+            os.path.join(BASE_DIR, 'templates'),                     
+            os.path.join(BASE_DIR, 'apps', 'users', 'templates'),    
         ],
         'APP_DIRS': True,
         'OPTIONS': {
