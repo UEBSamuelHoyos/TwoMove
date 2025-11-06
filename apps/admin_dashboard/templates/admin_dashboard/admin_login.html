@@ -1,0 +1,96 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>TwoMove | Panel Administrativo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #0d6efd 0%, #2b2b2b 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Poppins", sans-serif;
+    }
+    .login-card {
+      width: 380px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.25);
+      padding: 2rem;
+      animation: fadeIn 0.4s ease-in;
+    }
+    .login-card h4 {
+      font-weight: 600;
+      color: #0d6efd;
+      text-align: center;
+    }
+    .btn-primary {
+      background-color: #0d6efd;
+      border: none;
+    }
+    .btn-primary:hover {
+      background-color: #0048c2;
+    }
+    .form-control {
+      border-radius: 8px;
+    }
+    .alert {
+      border-radius: 8px;
+      font-size: 0.9rem;
+      padding: 0.5rem;
+    }
+    .footer-text {
+      color: #aaa;
+      font-size: 12px;
+      text-align: center;
+      margin-top: 15px;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-card">
+    <div class="text-center mb-3">
+      <img src="{% static 'images/twomove_logo.png' %}" alt="TwoMove" width="90" class="mb-2">
+      <h4>Panel Administrativo</h4>
+      <p class="text-muted mb-4">Inicia sesión para continuar</p>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} text-center">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="email" class="form-label">Correo electrónico</label>
+        <input type="text" id="email" name="email" class="form-control" placeholder="admin@twomove.com" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Contraseña</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 mt-2">Iniciar sesión</button>
+    </form>
+
+    <div class="footer-text">
+      <p class="mt-3 mb-0">TwoMove © {{ now|date:"Y" }}<br>Panel de control interno</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

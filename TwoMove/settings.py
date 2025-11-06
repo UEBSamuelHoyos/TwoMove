@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'apps.transactions.apps.TransactionsConfig',
     'apps.iot.apps.IotConfig',
     'apps.payment.apps.PaymentConfig',   
+     "apps.admin_dashboard.apps.AdminDashboardConfig",
     'rest_framework',
     
 ]

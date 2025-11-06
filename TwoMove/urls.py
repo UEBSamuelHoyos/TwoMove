@@ -16,7 +16,7 @@ urlpatterns = [
     # Rutas del módulo de usuarios (registro, verificación, login, etc.)
     path('usuarios/', include('apps.users.urls')),
 
-    # Rutas futuras: gestión de bicicletas, estaciones y alquileres
+    # Rutas 
     path('bicicletas/', include('apps.bikes.urls')),
     path('estaciones/', include('apps.stations.urls')),
     path('alquileres/', include('apps.rentals.urls')),
@@ -25,6 +25,7 @@ urlpatterns = [
     path('wallet/', include('apps.wallet.urls')),
     path("payment/", include("apps.payment.urls")),
     path("iot/", include("apps.iot.urls")),
+    path('admin-dashboard/', include('apps.admin_dashboard.urls')),
 
     
 
