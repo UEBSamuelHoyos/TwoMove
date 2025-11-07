@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+  # -----------------------------
+  #  Servicio de Base de Datos (MySQL)
+  # -----------------------------
+  db:
+    image: mysql:8.0
+    container_name: twomove_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: twomove_db
+      MYSQL_USER: twomove_user
+      MYSQL_PASSWORD: twomove_pass
+    ports:
+      - "3307:3306"                   # Host:Container
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # -----------------------------
+  #  Servicio Web (Django)
+  # -----------------------------
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: twomove_web
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app                        # sincroniza código local
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DEBUG: "True"
+      SECRET_KEY: "django-insecure-key"
+      DB_NAME: "twomove_db"
+      DB_USER: "twomove_user"
+      DB_PASSWORD: "twomove_pass"
+      DB_HOST: "db"
+      DB_PORT: "3306"
+      ALLOWED_HOSTS: "*"
+      # Stripe y otras variables opcionales
+      STRIPE_API_KEY: "sk_test_xxxxxxxxxxxxxxxxxxxxx"
+      EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
+    # Usa gunicorn si luego vas a pasar a producción:
+    # command: gunicorn TwoMove.wsgi:application --bind 0.0.0.0:8000
+
+volumes:
+  mysql_data:

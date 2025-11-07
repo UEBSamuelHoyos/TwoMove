@@ -2,24 +2,22 @@
 Django settings for TwoMove project.
 Configurado para uso con MySQL, autenticación personalizada por correo
 y envío de correos electrónicos (verificación y recuperación de usuario).
+Compatible con entorno Docker.
 """
 
 from pathlib import Path
 import os
 
-
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-*@tu+vrjbu2*s(=7)b7c^6oj#@yt0si6!!ontd5#w%1*&hv3_+'
-DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-*@tu+vrjbu2*s(=7)b7c^6oj#@yt0si6!!ontd5#w%1*&hv3_+')
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 INSTALLED_APPS = [
-   
-     'django.contrib.admin',
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -33,10 +31,10 @@ INSTALLED_APPS = [
     'apps.wallet.apps.WalletConfig',
     'apps.transactions.apps.TransactionsConfig',
     'apps.iot.apps.IotConfig',
-    'apps.payment.apps.PaymentConfig',   
-     "apps.admin_dashboard.apps.AdminDashboardConfig",
+    'apps.payment.apps.PaymentConfig',
+    'apps.admin_dashboard.apps.AdminDashboardConfig',
+
     'rest_framework',
-    
 ]
 
 
@@ -57,8 +55,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, 'templates'),                     
-            os.path.join(BASE_DIR, 'apps', 'users', 'templates'),    
+            os.path.join(BASE_DIR, 'templates'),
+            os.path.join(BASE_DIR, 'apps', 'users', 'templates'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -75,21 +73,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'TwoMove.wsgi.application'
 
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'twomovedb',
-        'USER': 'root',
-        'PASSWORD': 'sHA*1028480099',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': os.getenv('DB_NAME', 'twomove_db'),
+        'USER': os.getenv('DB_USER', 'twomove_user'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'twomove_pass'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),  # En docker será "db"
+        'PORT': os.getenv('DB_PORT', '3306'),
         'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
         },
     }
 }
-
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -100,21 +96,18 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-
 LANGUAGE_CODE = 'es-co'
 TIME_ZONE = 'America/Bogota'
 USE_I18N = True
 USE_TZ = True
 
 
-
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')] if os.path.exists(os.path.join(BASE_DIR, 'static')) else []
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -122,18 +115,12 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'twomoveee@gmail.com'
-EMAIL_HOST_PASSWORD = 'wtac dfvx jhtd ycwu'  
+EMAIL_HOST_PASSWORD = 'wtac dfvx jhtd ycwu'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
-
-
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-
-AUTH_USER_MODEL = 'users.Usuario'  
+AUTH_USER_MODEL = 'users.Usuario'
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -142,7 +129,6 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = '/pagos/'
 LOGOUT_REDIRECT_URL = 'users:login'
-
 
 
 REST_FRAMEWORK = {
@@ -165,7 +151,5 @@ LOGGING = {
 }
 
 
-
-STRIPE_PUBLIC_KEY = ''
-STRIPE_SECRET_KEY = ''
-
+STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY', '')
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', '')
