@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Monitoreo IoT - Bicicletas en Tiempo Real</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    #map { height: 100vh; width: 100%; }
+    .alerta {
+      animation: parpadeo 1s infinite alternate;
+    }
+    @keyframes parpadeo {
+      from { filter: brightness(100%); }
+      to { filter: brightness(50%); }
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script>
+    const map = L.map("map").setView([4.60971, -74.08175], 13);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "© OpenStreetMap",
+    }).addTo(map);
+
+    const bikeMarkers = {}; // marcador por bicicleta
+    const bikePaths = {};   // trayectoria por bicicleta
+    const estaciones = [];
+
+    // -----------------------------------------------------------
+    // 🅿️ Cargar estaciones desde la API real
+    // -----------------------------------------------------------
+    async function cargarEstaciones() {
+      const resp = await fetch("/estaciones/stations/");
+      const data = await resp.json();
+
+      data.forEach(est => {
+        if (est.latitud && est.longitud) {
+          const marker = L.circleMarker([est.latitud, est.longitud], {
+            radius: 8,
+            color: "#0066cc",
+            fillColor: "#3399ff",
+            fillOpacity: 0.8
+          }).addTo(map);
+          marker.bindPopup(`<b>${est.nombre}</b><br>${est.direccion}`);
+          estaciones.push({
+            nombre: est.nombre,
+            lat: parseFloat(est.latitud),
+            lng: parseFloat(est.longitud)
+          });
+        }
+      });
+    }
+
+    // -----------------------------------------------------------
+    // 🚴 Cargar posición actual de bicicletas
+    // -----------------------------------------------------------
+    async function cargarBicicletas() {
+      const resp = await fetch("/iot/api/telemetry/");
+      const data = await resp.json();
+
+      data.forEach(bike => {
+        const { bike_id, latitude, longitude, battery } = bike;
+        const color = battery > 60 ? "green" : battery > 30 ? "orange" : "red";
+        const pos = [latitude, longitude];
+
+        // Calcular si está dentro de zona (1 km de una estación)
+        let enZona = estaciones.some(e => distancia(pos, [e.lat, e.lng]) < 1.0);
+
+        const icon = L.divIcon({
+          html: `<i style="color:${enZona ? color : 'red'};font-size:22px;">🚲</i>`,
+          className: enZona ? "bike-icon" : "alerta",
+        });
+
+        // Actualizar marcador
+        if (bikeMarkers[bike_id]) {
+          bikeMarkers[bike_id].setLatLng(pos);
+          bikeMarkers[bike_id].setIcon(icon);
+        } else {
+          const marker = L.marker(pos, { icon }).addTo(map);
+          marker.bindPopup(`<b>Bicicleta ${bike_id}</b><br>
+                            🔋 ${battery}%<br>
+                            ${enZona ? "✅ En zona segura" : "⚠️ Fuera de ruta"}`);
+          bikeMarkers[bike_id] = marker;
+        }
+
+        // Actualizar trayectoria
+        if (!bikePaths[bike_id]) {
+          bikePaths[bike_id] = {
+            puntos: [pos],
+            linea: L.polyline([pos], { color: color, weight: 2 }).addTo(map)
+          };
+        } else {
+          bikePaths[bike_id].puntos.push(pos);
+          if (bikePaths[bike_id].puntos.length > 15) bikePaths[bike_id].puntos.shift();
+          bikePaths[bike_id].linea.setLatLngs(bikePaths[bike_id].puntos);
+        }
+      });
+    }
+
+    // -----------------------------------------------------------
+    // 📏 Calcular distancia (km) entre dos coordenadas
+    // -----------------------------------------------------------
+    function distancia(a, b) {
+      const R = 6371; // radio tierra km
+      const dLat = (b[0] - a[0]) * Math.PI / 180;
+      const dLon = (b[1] - a[1]) * Math.PI / 180;
+      const lat1 = a[0] * Math.PI / 180;
+      const lat2 = b[0] * Math.PI / 180;
+      const x = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+      return 2 * R * Math.asin(Math.sqrt(x));
+    }
+
+    // -----------------------------------------------------------
+    // 🔄 Carga periódica
+    // -----------------------------------------------------------
+    cargarEstaciones().then(() => {
+      cargarBicicletas();
+      setInterval(cargarBicicletas, 8000);
+    });
+  </script>
+</body>
+</html>

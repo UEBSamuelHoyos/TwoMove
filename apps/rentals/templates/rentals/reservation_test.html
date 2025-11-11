@@ -66,8 +66,13 @@
     <h1>🚲 Sistema de Bicicletas Compartidas</h1>
 
     <div class="container">
-        <label for="estacion">Selecciona estación de origen</label>
-        <select id="estacion"></select>
+        <!-- Estación de origen -->
+        <label for="estacion_origen">Estación de origen</label>
+        <select id="estacion_origen"></select>
+
+        <!-- Estación de destino -->
+        <label for="estacion_destino">Estación de destino</label>
+        <select id="estacion_destino"></select>
 
         <label for="fecha">Fecha de la reserva</label>
         <input type="date" id="fecha" required>
@@ -101,42 +106,60 @@
     <script>
         // 🚦 Cargar estaciones al iniciar
         async function cargarEstaciones() {
-            const select = document.getElementById("estacion");
-            const resp = await fetch("/estaciones/stations/");
-            const data = await resp.json();
+            const selects = [document.getElementById("estacion_origen"), document.getElementById("estacion_destino")];
+            try {
+                const resp = await fetch("/estaciones/stations/");
+                if (!resp.ok) throw new Error("No se pudo cargar la lista de estaciones.");
+                const data = await resp.json();
 
-            data.forEach(est => {
-                const option = document.createElement("option");
-                option.value = est.id;
+                selects.forEach(select => {
+                    select.innerHTML = "";
+                    const def = document.createElement("option");
+                    def.value = "";
+                    def.textContent = "-- Selecciona una estación --";
+                    select.appendChild(def);
 
-                const texto = `${est.nombre} — 🟢 ${est.disponibles_electricas} eléctricas / ⚙️ ${est.disponibles_mecanicas} mecánicas`;
-                option.textContent = texto;
+                    data.forEach(est => {
+                        const option = document.createElement("option");
+                        option.value = est.id;
+                        option.textContent = `${est.nombre} — 🟢 ${est.disponibles_electricas} eléctricas / ⚙️ ${est.disponibles_mecanicas} mecánicas`;
 
-                if (est.total_disponibles === 0) {
-                    option.disabled = true;
-                    option.textContent += " (Agotada)";
-                }
+                        if (est.total_disponibles === 0) {
+                            option.disabled = true;
+                            option.textContent += " (Agotada)";
+                        }
 
-                select.appendChild(option);
-            });
+                        select.appendChild(option);
+                    });
+                });
+            } catch (err) {
+                alert("Error al cargar estaciones: " + err.message);
+            }
         }
 
         // 🚴‍♂️ Crear reserva
         async function crearReserva() {
-            const estacion = document.getElementById("estacion").value;
+            const estacionOrigen = document.getElementById("estacion_origen").value;
+            const estacionDestino = document.getElementById("estacion_destino").value;
             const tipo = document.getElementById("tipo").value;
             const tipoViaje = document.getElementById("tipo_viaje").value;
             const metodo = document.getElementById("metodo").value;
             const fecha = document.getElementById("fecha").value;
             const hora = document.getElementById("hora").value;
 
-            if (!estacion || !fecha || !hora) {
+            if (!estacionOrigen || !estacionDestino || !fecha || !hora) {
                 alert("Por favor completa todos los campos antes de reservar.");
                 return;
             }
 
+            if (estacionOrigen === estacionDestino) {
+                alert("La estación de destino debe ser diferente a la de origen.");
+                return;
+            }
+
             const body = {
-                estacion_origen_id: estacion,
+                estacion_origen_id: estacionOrigen,
+                estacion_destino_id: estacionDestino,
                 tipo_bicicleta: tipo,
                 tipo_viaje: tipoViaje,
                 metodo_pago: metodo,
@@ -160,11 +183,12 @@
                 const data = await resp.json();
                 resultado.innerHTML = `
                     <h3>✅ Reserva Confirmada</h3>
-                    <p><b>Fecha:</b> ${fecha} — ${hora}</p>
+                    <p><b>Origen:</b> ${data.estacion_origen}</p>
+                    <p><b>Destino:</b> ${data.estacion_destino}</p>
                     <p><b>Bicicleta:</b> ${data.bike_serial_reservada}</p>
-                    <p><b>Dock:</b> ${data.bike_dock_reservado || "N/A"}</p>
-                    <p><b>Código desbloqueo:</b> ${data.codigo_desbloqueo}</p>
+                    <p><b>Código de desbloqueo:</b> <code>${data.codigo_desbloqueo}</code></p>
                     <p><b>Método de pago:</b> ${data.metodo_pago}</p>
+                    <p><b>Fecha:</b> ${fecha} — ${hora}</p>
                 `;
             } else {
                 const error = await resp.json();

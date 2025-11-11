@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="text-center mb-4">🚲 Iniciar Viaje</h2>
+
+  <form id="startTripForm">
+    <div class="mb-3">
+      <label for="codigo" class="form-label">Código de desbloqueo</label>
+      <input type="text" id="codigo" class="form-control" placeholder="Ej: A7KX" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Iniciar Viaje</button>
+  </form>
+
+  <div id="responseBox" class="mt-4" style="display:none;">
+    <h5>📋 Respuesta del Servidor:</h5>
+    <pre id="responseContent" class="bg-light p-3 rounded"></pre>
+  </div>
+</div>
+
+<script>
+document.getElementById("startTripForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const codigo = document.getElementById("codigo").value.trim();
+  if (!codigo) {
+    alert("Por favor ingresa el código de desbloqueo.");
+    return;
+  }
+
+  try {
+    const response = await fetch("/alquileres/api/rentals/start_by_user/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken")
+      },
+      credentials: "include", // 👈 necesario para sesión Django
+      body: JSON.stringify({ codigo })
+    });
+
+    const data = await response.json();
+    document.getElementById("responseBox").style.display = "block";
+    document.getElementById("responseContent").textContent = JSON.stringify(data, null, 2);
+
+    if (response.ok) {
+      alert("✅ Viaje iniciado correctamente");
+    } else {
+      alert("❌ Error: " + (data.detail || "No se pudo iniciar el viaje"));
+    }
+  } catch (error) {
+    alert("Error en la solicitud: " + error);
+  }
+});
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+</script>
+{% endblock %}

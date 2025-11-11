@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Resumen de tu viaje - TwoMove</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background-color: #f9fafb;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      background: #ffffff;
+      max-width: 640px;
+      margin: 40px auto;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #0074D9;
+      text-align: center;
+    }
+    p {
+      line-height: 1.6;
+      font-size: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      text-align: left;
+      padding: 8px;
+    }
+    tr:nth-child(even) {
+      background-color: #f3f6f9;
+    }
+    .total {
+      font-size: 18px;
+      font-weight: bold;
+      color: #0f5132;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 13px;
+      color: #555;
+      text-align: center;
+    }
+    .footer small {
+      display: block;
+      color: #777;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🚲 TwoMove - Resumen de tu viaje</h2>
+    <p>Hola <b>{{ usuario.first_name|default:usuario.email }}</b>,</p>
+    <p>Tu viaje ha finalizado correctamente. A continuación encuentras los detalles de tu recorrido:</p>
+
+    <table>
+      <tr>
+        <th>ID de Viaje</th>
+        <td>{{ rental.id }}</td>
+      </tr>
+      <tr>
+        <th>Duración total</th>
+        <td>{{ duracion }} minutos</td>
+      </tr>
+      <tr>
+        <th>Costo total</th>
+        <td class="total">{{ costo_total }}</td>
+      </tr>
+      <tr>
+        <th>Tipo de viaje</th>
+        <td>{{ rental.tipo_viaje|capfirst }}</td>
+      </tr>
+      <tr>
+        <th>Estación de origen</th>
+        <td>{{ rental.estacion_origen.nombre|default:"N/A" }}</td>
+      </tr>
+      <tr>
+        <th>Estación destino</th>
+        <td>
+          {% if fuera_estacion %}
+            🚨 Fuera de estación
+          {% else %}
+            {{ rental.estacion_destino.nombre|default:"N/A" }}
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>Fecha de finalización</th>
+        <td>{{ fecha_fin }}</td>
+      </tr>
+    </table>
+
+    <p style="margin-top: 20px;">
+      Gracias por viajar con <b>TwoMove</b> 🚴.<br>
+      Tu factura detallada se adjunta en formato PDF.
+    </p>
+
+    <div class="footer">
+      <strong>TwoMove SAS</strong>
+      <small>Sistema de Movilidad Urbana Inteligente © 2025</small>
+    </div>
+  </div>
+</body>
+</html>

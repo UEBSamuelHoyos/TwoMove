@@ -32,7 +32,9 @@ INSTALLED_APPS = [
     'apps.rentals.apps.RentalsConfig',
     'apps.wallet.apps.WalletConfig',
     'apps.transactions.apps.TransactionsConfig',
-    'apps.payment.apps.PaymentConfig',   # ✅ ESTA DEBE SER LA CORRECTA
+    'apps.iot.apps.IotConfig',
+    'apps.payment.apps.PaymentConfig',   
+     "apps.admin_dashboard.apps.AdminDashboardConfig",
     'rest_framework',
     
 ]
@@ -55,8 +57,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, 'templates'),                     # Carpeta global (opcional)
-            os.path.join(BASE_DIR, 'apps', 'users', 'templates'),    # ✅ Ruta exacta donde está recuperar_contrasena.html
+            os.path.join(BASE_DIR, 'templates'),                     
+            os.path.join(BASE_DIR, 'apps', 'users', 'templates'),    
         ],
         'APP_DIRS': True,
         'OPTIONS': {
