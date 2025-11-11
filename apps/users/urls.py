@@ -19,5 +19,6 @@ urlpatterns = [
 
     path('recordar-usuario/', views.recordar_usuario_view, name='recordar_usuario'),
 
+    path('dashboard/', views.dashboard_view, name='dashboard'),
   
 ]

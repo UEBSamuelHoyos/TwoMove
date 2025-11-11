@@ -1,0 +1,551 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - TwoMove</title>
+    <link rel="stylesheet" href="{% static 'users/css/dashboard.css' %}" />
+  </head>
+  <body>
+    <button id="menuToggle" class="menu-toggle">☰</button>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">
+          <img
+            src="{% static 'users/images/logo.png' %}"
+            alt="TwoMove"
+            onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:45px;height:45px;background:#2cb5a0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:1.5rem;font-weight:600;\'>T</div>'"
+          />
+        </div>
+        <button class="close-sidebar" id="closeSidebar">✕</button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-item active" data-section="inicio">
+          <span class="icon">🏠</span>
+          <span>Inicio</span>
+        </a>
+        <a class="nav-item" data-section="perfil">
+          <span class="icon">👤</span>
+          <span>Mi Perfil</span>
+        </a>
+        <a class="nav-item" data-section="saldo">
+          <span class="icon">💳</span>
+          <span>Saldo y Recargas</span>
+        </a>
+        <a class="nav-item" data-section="viajes">
+          <span class="icon">🚴</span>
+          <span>Mis Viajes</span>
+        </a>
+        <a class="nav-item" data-section="reservas">
+          <span class="icon">📅</span>
+          <span>Reservar</span>
+        </a>
+        <a class="nav-item" data-section="estaciones">
+          <span class="icon">📍</span>
+          <span>Estaciones</span>
+        </a>
+        <a class="nav-item" data-section="historial">
+          <span class="icon">📊</span>
+          <span>Historial</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="{% url 'users:logout' %}" class="logout-btn">
+          <span class="icon">🚪</span>
+          <span>Cerrar Sesión</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Sections -->
+      <div class="content-wrapper">
+        <!-- Sección Inicio -->
+        <section id="inicio" class="content-section active">
+          <h1>¡Hola, {{ user.nombre }}! 👋</h1>
+          <p class="subtitle">Bienvenido a tu dashboard de TwoMove</p>
+
+          <!-- Stats Cards -->
+          <div class="stats-grid">
+            <div class="stat-card blue">
+              <div class="stat-icon">💰</div>
+              <div class="stat-info">
+                <h3>Saldo Disponible</h3>
+                <p class="stat-value">${{ wallet.balance }}</p>
+              </div>
+            </div>
+
+            <div class="stat-card orange">
+              <div class="stat-icon">🚴</div>
+              <div class="stat-info">
+                <h3>Viajes este mes</h3>
+                <p class="stat-value">{{ viajes_mes|default:"0" }}</p>
+              </div>
+            </div>
+
+            <div class="stat-card green">
+              <div class="stat-icon">⏱️</div>
+              <div class="stat-info">
+                <h3>Tiempo total</h3>
+                <p class="stat-value">{{ tiempo_total|default:"0h 0min" }}</p>
+              </div>
+            </div>
+
+            <div class="stat-card red">
+              <div class="stat-icon">⭐</div>
+              <div class="stat-info">
+                <h3>Nivel</h3>
+                <p class="stat-value">{{ nivel|default:"Principiante" }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="quick-actions">
+            <h2>Acciones Rápidas</h2>
+            <div class="actions-grid">
+              <button class="action-btn" onclick="navigateTo('reservas')">
+                <span class="action-icon">🚲</span>
+                <span>Nueva Reserva</span>
+              </button>
+              <button class="action-btn" onclick="navigateTo('saldo')">
+                <span class="action-icon">💳</span>
+                <span>Recargar Saldo</span>
+              </button>
+              <button class="action-btn" onclick="navigateTo('viajes')">
+                <span class="action-icon">▶️</span>
+                <span>Iniciar Viaje</span>
+              </button>
+              <button class="action-btn" onclick="navigateTo('estaciones')">
+                <span class="action-icon">📍</span>
+                <span>Ver Estaciones</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="recent-activity">
+            <h2>Actividad Reciente</h2>
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-icon blue">🚴</div>
+                <div class="activity-content">
+                  <h4>Viaje completado</h4>
+                  <p>Estación Centro → Estación Parque</p>
+                  <span class="activity-time">Hace 2 horas</span>
+                </div>
+                <div class="activity-amount">-$3,500</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon green">💳</div>
+                <div class="activity-content">
+                  <h4>Recarga exitosa</h4>
+                  <p>Método: Tarjeta de crédito</p>
+                  <span class="activity-time">Hace 1 día</span>
+                </div>
+                <div class="activity-amount">+$50,000</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Sección Perfil -->
+        <section id="perfil" class="content-section">
+          <h1>Mi Perfil</h1>
+          <p class="subtitle">Administra tu información personal</p>
+
+          <div class="profile-container">
+            <div class="profile-card">
+              <div class="profile-header">
+                <div class="profile-avatar-large">{{ user.first_name.0 }}</div>
+                <h2>{{ user.get_full_name }}</h2>
+                <p>{{ user.email }}</p>
+              </div>
+
+              <form class="profile-form" method="post">
+                {% csrf_token %}
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Nombre</label>
+                    <input
+                      type="text"
+                      name="first_name"
+                      value="{{ user.first_name }}"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>Apellido</label>
+                    <input
+                      type="text"
+                      name="last_name"
+                      value="{{ user.last_name }}"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Correo Electrónico</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value="{{ user.email }}"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label>Teléfono</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value="{{ user.phone|default:'' }}"
+                    placeholder="+57 300 123 4567"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label>Dirección</label>
+                  <input
+                    type="text"
+                    name="address"
+                    value="{{ user.address|default:'' }}"
+                    placeholder="Calle 123 #45-67"
+                  />
+                </div>
+
+                <button type="submit" class="btn-primary">
+                  Guardar Cambios
+                </button>
+              </form>
+            </div>
+
+            <div class="password-card">
+              <h3>Cambiar Contraseña</h3>
+              <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                  <label>Contraseña Actual</label>
+                  <input type="password" name="old_password" required />
+                </div>
+                <div class="form-group">
+                  <label>Nueva Contraseña</label>
+                  <input type="password" name="new_password1" required />
+                </div>
+                <div class="form-group">
+                  <label>Confirmar Nueva Contraseña</label>
+                  <input type="password" name="new_password2" required />
+                </div>
+                <button type="submit" class="btn-secondary">
+                  Actualizar Contraseña
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- Sección Saldo -->
+        <section id="saldo" class="content-section">
+          <h1>Saldo y Recargas</h1>
+          <p class="subtitle">Administra tu saldo disponible</p>
+
+          <div class="balance-container">
+            <div class="balance-card">
+              <h2>Saldo Actual</h2>
+              <div class="balance-amount">
+                ${{ saldo_disponible|default:"0" }}
+              </div>
+              <button class="btn-recharge" onclick="openRechargeModal()">
+                💳 Recargar Saldo
+              </button>
+            </div>
+
+            <div class="recharge-options">
+              <h3>Opciones de Recarga</h3>
+              <div class="amount-grid">
+                <button class="amount-btn" data-amount="10000">$10,000</button>
+                <button class="amount-btn" data-amount="20000">$20,000</button>
+                <button class="amount-btn" data-amount="50000">$50,000</button>
+                <button class="amount-btn" data-amount="100000">
+                  $100,000
+                </button>
+              </div>
+
+              <div class="custom-amount">
+                <label>Monto Personalizado</label>
+                <input
+                  type="number"
+                  id="customAmount"
+                  placeholder="Ingresa el monto"
+                />
+                <button class="btn-primary" onclick="rechargeCustom()">
+                  Recargar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="recharge-history">
+            <h3>Historial de Recargas</h3>
+            <div class="history-list">
+              <div class="history-item">
+                <div class="history-icon">💳</div>
+                <div class="history-info">
+                  <h4>Recarga</h4>
+                  <p>03/11/2025 - 14:30</p>
+                </div>
+                <div class="history-amount green">+$50,000</div>
+              </div>
+              <div class="history-item">
+                <div class="history-icon">💳</div>
+                <div class="history-info">
+                  <h4>Recarga</h4>
+                  <p>01/11/2025 - 10:15</p>
+                </div>
+                <div class="history-amount green">+$30,000</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Sección Viajes -->
+        <section id="viajes" class="content-section">
+          <h1>Mis Viajes</h1>
+          <p class="subtitle">Inicia o revisa tus viajes activos</p>
+
+          <div class="trip-actions">
+            <button class="btn-large green" onclick="startTrip()">
+              <span class="btn-icon">▶️</span>
+              <span>Iniciar Viaje Ahora</span>
+            </button>
+          </div>
+
+          <div class="active-trips">
+            <h3>Viajes Activos</h3>
+            <div class="trip-card active">
+              <div class="trip-status">🚴 En curso</div>
+              <div class="trip-details">
+                <h4>Bicicleta UrbanX 2024</h4>
+                <p>Inicio: Estación Centro - 15:30</p>
+                <p>
+                  Tiempo transcurrido: <strong id="tripTimer">00:45:30</strong>
+                </p>
+              </div>
+              <button class="btn-danger">Finalizar Viaje</button>
+            </div>
+          </div>
+
+          <div class="recent-trips">
+            <h3>Viajes Recientes</h3>
+            <div class="trips-list">
+              <div class="trip-item">
+                <div class="trip-info">
+                  <h4>Estación Centro → Estación Parque</h4>
+                  <p>03/11/2025 - 1h 15min</p>
+                </div>
+                <div class="trip-cost">$3,500</div>
+              </div>
+              <div class="trip-item">
+                <div class="trip-info">
+                  <h4>Estación Norte → Estación Sur</h4>
+                  <p>02/11/2025 - 45min</p>
+                </div>
+                <div class="trip-cost">$2,800</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Sección Reservas -->
+        <section id="reservas" class="content-section">
+          <h1>Reservar Bicicleta</h1>
+          <p class="subtitle">Elige tu bicicleta y estación</p>
+
+          <div class="reservation-container">
+            <form class="reservation-form">
+              <div class="form-group">
+                <label>Estación de Retiro</label>
+                <select name="station" required>
+                  <option value="">Selecciona una estación</option>
+                  <option value="1">Estación Centro</option>
+                  <option value="2">Estación Parque</option>
+                  <option value="3">Estación Norte</option>
+                  <option value="4">Estación Sur</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Tipo de Bicicleta</label>
+                <select name="bike_type" required>
+                  <option value="">Selecciona el tipo</option>
+                  <option value="urban">UrbanX 2024</option>
+                  <option value="mountain">Mountain Pro</option>
+                  <option value="electric">E-Bike Plus</option>
+                </select>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Fecha</label>
+                  <input type="date" name="date" required />
+                </div>
+                <div class="form-group">
+                  <label>Hora</label>
+                  <input type="time" name="time" required />
+                </div>
+              </div>
+
+              <button type="submit" class="btn-primary">Reservar Ahora</button>
+            </form>
+
+            <div class="bikes-available">
+              <h3>Bicicletas Disponibles</h3>
+              <div class="bikes-grid">
+                <div class="bike-card">
+                  <div class="bike-image">🚲</div>
+                  <h4>UrbanX 2024</h4>
+                  <p>12 disponibles</p>
+                  <span class="bike-price">$2,500/hora</span>
+                </div>
+                <div class="bike-card">
+                  <div class="bike-image">🚵</div>
+                  <h4>Mountain Pro</h4>
+                  <p>8 disponibles</p>
+                  <span class="bike-price">$3,000/hora</span>
+                </div>
+                <div class="bike-card">
+                  <div class="bike-image">⚡</div>
+                  <h4>E-Bike Plus</h4>
+                  <p>5 disponibles</p>
+                  <span class="bike-price">$4,500/hora</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Sección Estaciones -->
+        <section id="estaciones" class="content-section">
+          <h1>Estaciones</h1>
+          <p class="subtitle">
+            Encuentra estaciones cercanas y revisa su disponibilidad
+          </p>
+
+          <div class="stations-grid">
+            <div class="station-card">
+              <div class="station-header">
+                <h3>📍 Estación Centro</h3>
+                <span class="station-status active">Activa</span>
+              </div>
+              <div class="station-info">
+                <p><strong>Dirección:</strong> Calle 50 #45-30</p>
+                <p><strong>Bicicletas disponibles:</strong> 15</p>
+                <p><strong>Espacios libres:</strong> 8</p>
+              </div>
+              <button class="btn-secondary">Ver en Mapa</button>
+            </div>
+
+            <div class="station-card">
+              <div class="station-header">
+                <h3>📍 Estación Parque</h3>
+                <span class="station-status active">Activa</span>
+              </div>
+              <div class="station-info">
+                <p><strong>Dirección:</strong> Carrera 30 #25-40</p>
+                <p><strong>Bicicletas disponibles:</strong> 10</p>
+                <p><strong>Espacios libres:</strong> 12</p>
+              </div>
+              <button class="btn-secondary">Ver en Mapa</button>
+            </div>
+
+            <div class="station-card">
+              <div class="station-header">
+                <h3>📍 Estación Norte</h3>
+                <span class="station-status maintenance">Mantenimiento</span>
+              </div>
+              <div class="station-info">
+                <p><strong>Dirección:</strong> Avenida 80 #100-20</p>
+                <p><strong>Bicicletas disponibles:</strong> 0</p>
+                <p><strong>Espacios libres:</strong> 0</p>
+              </div>
+              <button class="btn-secondary" disabled>No disponible</button>
+            </div>
+
+            <div class="station-card">
+              <div class="station-header">
+                <h3>📍 Estación Sur</h3>
+                <span class="station-status active">Activa</span>
+              </div>
+              <div class="station-info">
+                <p><strong>Dirección:</strong> Calle 10 #20-15</p>
+                <p><strong>Bicicletas disponibles:</strong> 18</p>
+                <p><strong>Espacios libres:</strong> 5</p>
+              </div>
+              <button class="btn-secondary">Ver en Mapa</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Sección Historial -->
+        <section id="historial" class="content-section">
+          <h1>Historial Completo</h1>
+          <p class="subtitle">Revisa todo tu historial de actividades</p>
+
+          <div class="filters">
+            <select class="filter-select">
+              <option>Todos</option>
+              <option>Viajes</option>
+              <option>Recargas</option>
+              <option>Reservas</option>
+            </select>
+            <input type="date" class="filter-date" />
+          </div>
+
+          <div class="history-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Descripción</th>
+                  <th>Monto</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>03/11/2025 16:30</td>
+                  <td><span class="badge blue">Viaje</span></td>
+                  <td>Centro → Parque</td>
+                  <td class="amount negative">-$3,500</td>
+                  <td><span class="badge green">Completado</span></td>
+                </tr>
+                <tr>
+                  <td>03/11/2025 14:30</td>
+                  <td><span class="badge green">Recarga</span></td>
+                  <td>Tarjeta de crédito</td>
+                  <td class="amount positive">+$50,000</td>
+                  <td><span class="badge green">Exitoso</span></td>
+                </tr>
+                <tr>
+                  <td>02/11/2025 10:15</td>
+                  <td><span class="badge blue">Viaje</span></td>
+                  <td>Norte → Sur</td>
+                  <td class="amount negative">-$2,800</td>
+                  <td><span class="badge green">Completado</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script src="{% static 'users/js/dashboard.js' %}"></script>
+  </body>
+</html>

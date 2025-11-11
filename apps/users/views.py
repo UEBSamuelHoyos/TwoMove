@@ -1,5 +1,7 @@
 # apps/users/views.py
 
+from datetime import timedelta
+
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -15,11 +17,60 @@ from .forms import RegistroForm, VerificacionForm
 from .models import Usuario, CambioCredenciales
 
 from django.shortcuts import render
+from apps.wallet.models import Wallet
+from apps.rentals.models import Rental
+from apps.payment.models import MetodoTarjeta
+from apps.stations.models import Station
 
 def home_view(request):
     return render(request, 'users/base.html')
+def dashboard_view(request):
+    user = request.user
 
+    # 🪙 Obtener la billetera del usuario
+    wallet, created = Wallet.objects.get_or_create(usuario=user)
+    saldo_disponible = wallet.balance if wallet else 0
 
+    # 🚴 Viajes del mes actual
+    hoy = timezone.now()
+    inicio_mes = hoy.replace(day=1)
+    viajes_mes = Rental.objects.filter(usuario=user, hora_inicio__gte=inicio_mes).count()
+
+    # ⏱️ Calcular tiempo total de viajes completados
+    rentals = Rental.objects.filter(usuario=user, hora_fin__isnull=False)
+    tiempo_total = timedelta()
+    for viaje in rentals:
+        tiempo_total += (viaje.hora_fin - viaje.hora_inicio)
+    horas, resto = divmod(tiempo_total.total_seconds(), 3600)
+    minutos = int(resto // 60)
+    tiempo_total_str = f"{int(horas)}h {minutos}min"
+
+    # ⭐ Nivel según cantidad de viajes
+    if viajes_mes > 20:
+        nivel = "Experto"
+    elif viajes_mes > 10:
+        nivel = "Avanzado"
+    else:
+        nivel = "Principiante"
+
+    # 💳 Últimos pagos (si tienes modelo Payment)
+    pagos = MetodoTarjeta.objects.filter(usuario=user).order_by('-creado_en')[:5]
+
+    # 📍 Estaciones activas
+    estaciones = Station.objects.all()
+
+    contexto = {
+        "user": user,
+        "wallet": wallet,
+        "saldo_disponible": saldo_disponible,
+        "viajes_mes": viajes_mes,
+        "tiempo_total": tiempo_total_str,
+        "nivel": nivel,
+        "pagos": pagos,
+        "estaciones": estaciones,
+    }
+
+    return render(request, "users/dashboard.html", contexto)
 def registro_view(request):
     if request.method == 'POST':
         form = RegistroForm(request.POST)
@@ -78,7 +129,7 @@ def login_view(request):
         if usuario is not None:
             if usuario.estado == 'activo':
                 login(request, usuario)
-                return redirect('users:login')  # Evita el NoReverseMatch temporalmente
+                return redirect('users:dashboard')
 
             else:
                 messages.error(request, "Cuenta no verificada o sancionada.")
