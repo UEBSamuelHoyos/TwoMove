@@ -1,36 +1,111 @@
-{% extends "base.html" %}
-{% block content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verificación de cuenta - TwoMove</title>
+    <link rel="stylesheet" href="{% static 'users/css/verificar.css' %}" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <nav class="nav-container">
+        <a href="{% url 'home' %}" class="logo">
+          <div class="logo-icon">
+            <img
+              src="{% static 'users/images/logo.png' %}"
+              alt="TwoMove Logo"
+              onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:45px;height:45px;background:#2cb5a0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:1.5rem;font-weight:600;\'>T</div>'"
+            />
+          </div>
+        </a>
 
-<div class="row justify-content-center">
-  <div class="col-md-5">
-    <div class="card p-4">
-      <h3 class="text-center mb-3">Verificación de cuenta</h3>
-      <p class="text-center text-muted mb-4">
-        Ingresa el código de 6 dígitos que te enviamos a tu correo electrónico.
-      </p>
+        <div class="welcome-text">
+          💚 Tu cuenta es importante para nosotros.
+          <span>Estamos protegiendo tu camino con TwoMove.</span>
+        </div>
+      </nav>
+    </header>
 
-      <form method="post">
-        {% csrf_token %}
-        <div class="form-group mb-3">
-          <label for="id_email">Correo electrónico</label>
-          {{ form.email }}
+    <!-- Main Content -->
+    <div class="verification-container">
+      <div class="verification-card">
+        <div class="verification-icon">
+          <svg
+            width="60"
+            height="60"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#48bb78"
+            stroke-width="2"
+          >
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
         </div>
 
-        <div class="form-group mb-4">
-          <label for="id_codigo">Código de verificación</label>
-          {{ form.codigo }}
-        </div>
+        <h1>Verificación de cuenta</h1>
+        <p class="subtitle">
+          Ingresa el código de 6 dígitos que te enviamos a tu correo
+          electrónico.
+        </p>
 
-        <div class="d-grid">
-          <button type="submit" class="btn btn-primary btn-block">Verificar cuenta</button>
-        </div>
-      </form>
+        <form method="post" id="verificationForm">
+          {% csrf_token %}
 
-      <div class="text-center mt-3">
-        <small>¿No recibiste el código? <a href="#">Reenviar código</a></small>
+          <div class="form-group">
+            <label for="id_email">Correo electrónico</label>
+            {{ form.email }} {% if form.email.errors %}
+            <div class="error-message">{{ form.email.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="id_codigo">Código de verificación</label>
+            {{ form.codigo }} {% if form.codigo.errors %}
+            <div class="error-message">{{ form.codigo.errors }}</div>
+            {% endif %}
+          </div>
+
+          <button type="submit" class="btn-submit">
+            <span>Verificar cuenta</span>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </form>
+
+        <div class="resend-section">
+          <p>¿No recibiste el código?</p>
+          <a href="#" class="resend-link" id="resendLink">Reenviar código</a>
+        </div>
+      </div>
+
+      <div class="back-link">
+        <a href="{% url 'home' %}">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          Volver al inicio
+        </a>
       </div>
     </div>
-  </div>
-</div>
 
-{% endblock %}
+    <script src="{% static 'users/js/verificar.js' %}"></script>
+  </body>
+</html>

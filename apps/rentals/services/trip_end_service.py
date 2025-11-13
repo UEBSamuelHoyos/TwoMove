@@ -121,17 +121,17 @@ class TripEndService:
             # Generar y enviar factura
             # ------------------------------------------------------------------
             print("📄 Generando factura PDF…")
-            factura_pdf = TripEndService._generar_factura_pdf(rental, costo_total, duracion)
+            factura_pdf = TripEndService._generar_factura_pdf(rental, costo_total, duracion_min)
 
             print("📧 Enviando correo…")
-            TripEndService._enviar_correo_factura(usuario, rental, costo_total, duracion, factura_pdf)
+            TripEndService._enviar_correo_factura(usuario, rental, costo_total, duracion_min, factura_pdf, fuera_estacion)
 
             print(f"✅ Viaje finalizado correctamente — Rental #{rental.id}")
 
             return {
                 "mensaje": "✅ Viaje finalizado correctamente",
                 "costo_total": round(float(costo_total), 2),
-                "duracion_minutos": round(duracion, 1),
+                "duracion_minutos": round(duracion_min, 1),
                 "estado_bicicleta": bike.estado,
                 "estacion_destino": getattr(estacion_destino, "nombre", "N/A"),
             }
@@ -166,13 +166,17 @@ class TripEndService:
     # 📧 Envío de correo con factura PDF adjunta
     # ------------------------------------------------------------------
     @staticmethod
-    def _enviar_correo_factura(usuario, rental, costo_total, duracion, pdf_buffer):
+    def _enviar_correo_factura(usuario, rental, costo_total, duracion, pdf_buffer, fuera_estacion):
         try:
+            # ✅ Contexto completo para el template
             context = {
                 "usuario": usuario,
                 "rental": rental,
-                "costo_total": round(float(costo_total), 2),
-                "duracion_minutos": round(duracion, 1),
+                "costo_total": f"${round(float(costo_total), 2):,.0f}",  # Formato: $17,500
+                "duracion": round(duracion, 1),
+                "fecha_fin": rental.hora_fin.strftime('%d de %B de %Y, %I:%M %p'),
+                "fuera_estacion": fuera_estacion,
+                "now": timezone.now(),
             }
 
             html_content = render_to_string("rentals/trip_finished.html", context)

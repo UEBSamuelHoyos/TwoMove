@@ -83,32 +83,53 @@ class CancellationService:
     # -----------------------------------------------------------
     # 📧 Envío de correo de cancelación
     # -----------------------------------------------------------
+# -----------------------------------------------------------
+    # 📧 Envío de correo de cancelación
+    # -----------------------------------------------------------
     @staticmethod
     def _enviar_correo_cancelacion(usuario, rental, motivo=""):
         """
         Envía un correo electrónico al usuario confirmando la cancelación de su reserva.
-        Usa el template: rentals/cancellation_confirmed.html
+        Usa el template: rentals/reservation_cancelled.html
         """
         try:
-            html_content = render_to_string("rentals/reservation_cancelled.html", {
+            # Calcular el reembolso
+            refund_amount = Decimal(rental.costo_estimado or 0)
+            reembolso_texto = f"${refund_amount:,.0f} COP" if refund_amount > 0 else "Sin costo"
+            
+            # Contexto para el template
+            ctx = {
                 "usuario": usuario,
-                "user": usuario,  # compatibilidad con {{ user }} en el template
-                "fecha": rental.hora_fin.strftime("%Y-%m-%d") if rental.hora_fin else "",
-                "hora": rental.hora_fin.strftime("%H:%M") if rental.hora_fin else "",
-                "estacion": rental.estacion_origen.nombre if rental.estacion_origen else "Desconocida",
-                "bicicleta": rental.bike_serial_reservada or "N/A",
+                "rental": rental,
+                "fecha": rental.hora_fin.strftime("%Y-%m-%d") if rental.hora_fin else timezone.now().strftime("%Y-%m-%d"),
+                "hora": rental.hora_fin.strftime("%H:%M") if rental.hora_fin else timezone.now().strftime("%H:%M"),
+                "estacion_origen": rental.estacion_origen.nombre if rental.estacion_origen else "Desconocida",
+                "estacion_destino": rental.estacion_destino.nombre if rental.estacion_destino else "N/A",
+                "bike_serial": rental.bike_serial_reservada or "No asignada",
                 "codigo": rental.codigo_desbloqueo or "N/A",
-                "costo": f"${rental.costo_estimado:,.0f}" if rental.costo_estimado else "Sin costo",
-                "motivo": motivo,
-                "SITE_NAME": "TwoMove",
-                "SITE_URL": "https://twomove.co",
-            })
+                "reembolso": reembolso_texto,
+                "motivo": motivo or "",
+            }
+
+            html_content = render_to_string("rentals/reservation_cancelled.html", ctx)
+
+            # Texto plano de respaldo
+            text_content = (
+                f"Hola {getattr(usuario, 'nombre', usuario.email)}.\n\n"
+                f"Tu reserva #{rental.id} ha sido cancelada exitosamente.\n"
+                f"Origen: {ctx['estacion_origen']}\n"
+                f"Destino: {ctx['estacion_destino']}\n"
+                f"Bicicleta: {ctx['bike_serial']}\n"
+                f"Reembolso: {ctx['reembolso']}\n"
+                f"Motivo: {motivo or 'Sin motivo especificado'}\n\n"
+                "Gracias por usar TwoMove."
+            )
 
             subject = f"❌ Reserva #{rental.id} cancelada - TwoMove"
             from_email = settings.DEFAULT_FROM_EMAIL
             to_email = [usuario.email]
 
-            email = EmailMultiAlternatives(subject, "", from_email, to_email)
+            email = EmailMultiAlternatives(subject, text_content, from_email, to_email)
             email.attach_alternative(html_content, "text/html")
             email.send(fail_silently=False)
 

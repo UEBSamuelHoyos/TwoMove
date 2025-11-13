@@ -1,114 +1,288 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Resumen de tu viaje - TwoMove</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background-color: #f9fafb;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      background: #ffffff;
-      max-width: 640px;
-      margin: 40px auto;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    h2 {
-      color: #0074D9;
-      text-align: center;
-    }
-    p {
-      line-height: 1.6;
-      font-size: 15px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    th, td {
-      text-align: left;
-      padding: 8px;
-    }
-    tr:nth-child(even) {
-      background-color: #f3f6f9;
-    }
-    .total {
-      font-size: 18px;
-      font-weight: bold;
-      color: #0f5132;
-    }
-    .footer {
-      margin-top: 30px;
-      font-size: 13px;
-      color: #555;
-      text-align: center;
-    }
-    .footer small {
-      display: block;
-      color: #777;
-      margin-top: 4px;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h2>🚲 TwoMove - Resumen de tu viaje</h2>
-    <p>Hola <b>{{ usuario.first_name|default:usuario.email }}</b>,</p>
-    <p>Tu viaje ha finalizado correctamente. A continuación encuentras los detalles de tu recorrido:</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resumen de tu Viaje - TwoMove</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: linear-gradient(135deg, #f7fafc 0%, #e6f7ff 100%);
+        color: #2d3748;
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+        overflow: hidden;
+      }
+      .header {
+        text-align: center;
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        color: white;
+        padding: 35px 20px;
+        position: relative;
+      }
+      .header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(
+          circle at 30% 50%,
+          rgba(255, 255, 255, 0.15) 0%,
+          transparent 50%
+        );
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        letter-spacing: 0.5px;
+      }
+      .header-icon {
+        font-size: 50px;
+        margin-bottom: 10px;
+        display: block;
+      }
+      .content {
+        padding: 35px;
+      }
+      .content p {
+        margin: 0 0 16px 0;
+        color: #4a5568;
+        font-size: 15px;
+      }
+      .greeting {
+        font-size: 16px;
+        color: #1a202c;
+        margin-bottom: 20px;
+      }
+      .card {
+        background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 25px 0;
+        border: 2px solid #48bb78;
+        box-shadow: 0 4px 12px rgba(72, 187, 120, 0.15);
+      }
+      .card p {
+        margin: 12px 0;
+        color: #2d3748;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .card p strong {
+        color: #22543d;
+        min-width: 180px;
+        font-weight: 600;
+      }
+      .card p span.value {
+        flex: 1;
+      }
+      .total-card {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border: 2px solid #f59e0b;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 25px 0;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+      }
+      .total-card p {
+        margin: 5px 0;
+        font-size: 16px;
+        color: #92400e;
+      }
+      .total-amount {
+        font-size: 32px;
+        font-weight: 700;
+        color: #78350f;
+        margin: 10px 0;
+      }
+      .footer {
+        text-align: center;
+        font-size: 14px;
+        color: #718096;
+        margin-top: 30px;
+        padding-top: 25px;
+        border-top: 2px solid #e2e8f0;
+      }
+      .footer p {
+        margin: 8px 0;
+      }
+      .footer strong {
+        color: #38a169;
+        font-weight: 700;
+      }
+      .info-message {
+        background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+        border-left: 4px solid #0ea5e9;
+        padding: 15px 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+        color: #075985;
+      }
+      .info-message p {
+        margin: 0;
+        color: #075985;
+      }
+      .alert-message {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        border-left: 4px solid #ef4444;
+        padding: 15px 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+        color: #991b1b;
+      }
+      .alert-message p {
+        margin: 0;
+        color: #991b1b;
+      }
+      .divider {
+        height: 2px;
+        background: linear-gradient(
+          to right,
+          transparent,
+          #e2e8f0,
+          transparent
+        );
+        margin: 25px 0;
+      }
+      .emoji {
+        font-size: 20px;
+        margin-right: 5px;
+      }
+      .success-badge {
+        display: inline-block;
+        background: #c6f6d5;
+        color: #22543d;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 15px;
+      }
+      .btn {
+        display: inline-block;
+        margin-top: 20px;
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        color: #fff !important;
+        text-decoration: none;
+        padding: 14px 28px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 15px;
+        box-shadow: 0 6px 20px rgba(72, 187, 120, 0.3);
+        transition: all 0.2s ease;
+        text-align: center;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(72, 187, 120, 0.4);
+      }
+    </style>
+  </head>
 
-    <table>
-      <tr>
-        <th>ID de Viaje</th>
-        <td>{{ rental.id }}</td>
-      </tr>
-      <tr>
-        <th>Duración total</th>
-        <td>{{ duracion }} minutos</td>
-      </tr>
-      <tr>
-        <th>Costo total</th>
-        <td class="total">{{ costo_total }}</td>
-      </tr>
-      <tr>
-        <th>Tipo de viaje</th>
-        <td>{{ rental.tipo_viaje|capfirst }}</td>
-      </tr>
-      <tr>
-        <th>Estación de origen</th>
-        <td>{{ rental.estacion_origen.nombre|default:"N/A" }}</td>
-      </tr>
-      <tr>
-        <th>Estación destino</th>
-        <td>
-          {% if fuera_estacion %}
-            🚨 Fuera de estación
-          {% else %}
-            {{ rental.estacion_destino.nombre|default:"N/A" }}
-          {% endif %}
-        </td>
-      </tr>
-      <tr>
-        <th>Fecha de finalización</th>
-        <td>{{ fecha_fin }}</td>
-      </tr>
-    </table>
+  <body>
+    <div class="container">
+      <div class="header">
+        <span class="header-icon">🏁</span>
+        <h1>¡Viaje Completado!</h1>
+      </div>
 
-    <p style="margin-top: 20px;">
-      Gracias por viajar con <b>TwoMove</b> 🚴.<br>
-      Tu factura detallada se adjunta en formato PDF.
-    </p>
+      <div class="content">
+        <p class="greeting">
+          Hola <strong>{{ usuario.first_name|default:usuario.email }}</strong>,
+        </p>
+        <p>
+          <span class="success-badge">✅ Finalizado</span><br />
+          Tu viaje ha finalizado correctamente. A continuación encuentras los
+          detalles de tu recorrido:
+        </p>
 
-    <div class="footer">
-      <strong>TwoMove SAS</strong>
-      <small>Sistema de Movilidad Urbana Inteligente © 2025</small>
+        <div class="card">
+          <p>
+            <strong><span class="emoji">🔢</span> ID de Viaje:</strong>
+            <span class="value">{{ rental.id }}</span>
+          </p>
+          <p>
+            <strong><span class="emoji">⏱️</span> Duración total:</strong>
+            <span class="value">{{ duracion }} minutos</span>
+          </p>
+          <p>
+            <strong><span class="emoji">🕓</span> Tipo de viaje:</strong>
+            <span class="value">{{ rental.tipo_viaje|capfirst }}</span>
+          </p>
+          <p>
+            <strong><span class="emoji">📍</span> Estación de origen:</strong>
+            <span class="value"
+              >{{ rental.estacion_origen.nombre|default:"N/A" }}</span
+            >
+          </p>
+          <p>
+            <strong><span class="emoji">🎯</span> Estación destino:</strong>
+            <span class="value"
+              >{{rental.estacion_destino.nombre|default:"N/A" }}</span
+            >
+          </p>
+          <p>
+            <strong
+              ><span class="emoji">📅</span> Fecha de finalización:</strong
+            >
+            <span class="value">{{ fecha_fin }}</span>
+          </p>
+        </div>
+
+        <div class="total-card">
+          <p><strong>💰 Costo Total</strong></p>
+          <div class="total-amount">{{ costo_total }}</div>
+        </div>
+
+        {% if fuera_estacion %}
+        <div class="alert-message">
+          <p>
+            ⚠️ <strong>Atención:</strong> La bicicleta fue devuelta fuera de una
+            estación TwoMove. Se aplicaron cargos adicionales según nuestras
+            políticas de uso.
+          </p>
+        </div>
+        {% endif %}
+
+        <div class="divider"></div>
+
+        <div class="info-message">
+          <p>
+            📄 <strong>Factura adjunta:</strong> Tu factura detallada se adjunta
+            en formato PDF para tu registro y control.
+          </p>
+        </div>
+
+        <div style="text-align: center">
+          <a href="https://twomove.co" class="btn">🚴 Ver mis viajes</a>
+        </div>
+
+        <div class="footer">
+          <p>Gracias por viajar con <strong>TwoMove</strong> 🚴‍♂️</p>
+          <p style="font-size: 12px; color: #a0aec0; margin-top: 15px">
+            © {{ now|date:"Y" }} TwoMove SAS — Sistema de Movilidad Urbana
+            Inteligente
+          </p>
+        </div>
+      </div>
     </div>
-  </div>
-</body>
+  </body>
 </html>

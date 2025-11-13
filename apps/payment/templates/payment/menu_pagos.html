@@ -1,21 +1,111 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Gestión de Pagos | TwoMove</title>
-    <link rel="stylesheet" href="{% static 'css/pagos.css' %}">
-</head>
-<body>
-    <div class="container">
-        <h1>Gestión de Pagos</h1>
-        <p>Selecciona una opción para continuar:</p>
-
-        <div class="menu">
-            <a href="{% url 'agregar_tarjeta' %}" class="btn opcion">💳 Agregar Tarjeta</a>
-            <a href="{% url 'recargar_saldo' %}" class="btn opcion">💰 Recargar Saldo</a>
-            <a href="{% url 'eliminar_tarjeta_view' %}" class="btn opcion">❌ Eliminar Tarjeta</a>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestión de Pagos - TwoMove</title>
+    <link rel="stylesheet" href="{% static 'payments/css/menu_pagos.css' %}" />
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">
+          <img
+            src="{% static 'users/images/logo.png' %}"
+            alt="TwoMove"
+            onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:45px;height:45px;background:#2cb5a0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:1.5rem;font-weight:600;\'>T</div>'"
+          />
         </div>
-    </div>
-</body>
+        <button class="close-sidebar" id="closeSidebar">✕</button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="{% url 'users:dashboard' %}" class="nav-item">
+          <span class="icon">🏠</span>
+          <span>Inicio</span>
+        </a>
+        <a href="{% url 'menu_pagos' %}" class="nav-item">
+          <span class="icon">💳</span>
+          <span>Saldo y Recargas</span>
+        </a>
+        <a href="{% url 'rentals:start_trip_test' %}" class="nav-item">
+          <span class="icon">🚴</span>
+          <span>Mis Viajes</span>
+        </a>
+        <a href="{% url 'rentals:reservation_test' %}" class="nav-item">
+          <span class="icon">📅</span>
+          <span>Reservar</span>
+        </a>
+        <a href="{% url 'rentals:trip_history' %}" class="nav-item">
+          <span class="icon">📊</span>
+          <span>Historial</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="{% url 'users:logout' %}" class="logout-btn">
+          <span class="icon">🚪</span>
+          <span>Cerrar Sesión</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="dashboard-header">
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <div class="header-right">
+          <div class="user-info">
+            <span class="user-name">{{ user.nombre|default:"Usuario" }}</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <div class="content-wrapper">
+        <h1>Gestión de Pagos</h1>
+        <p class="subtitle">Selecciona una opción para continuar</p>
+
+        <!-- Payment Options -->
+        <div class="payment-options">
+          <div class="options-grid">
+            <!-- Agregar Tarjeta -->
+            <a href="{% url 'agregar_tarjeta' %}" class="option-card blue">
+              <div class="option-icon">💳</div>
+              <div class="option-content">
+                <h3>Agregar Tarjeta</h3>
+                <p>Registra una nueva tarjeta de crédito o débito</p>
+              </div>
+              <div class="option-arrow">→</div>
+            </a>
+
+            <!-- Recargar Saldo -->
+            <a href="{% url 'recargar_saldo' %}" class="option-card green">
+              <div class="option-icon">💰</div>
+              <div class="option-content">
+                <h3>Recargar Saldo</h3>
+                <p>Agrega dinero a tu cuenta para tus viajes</p>
+              </div>
+              <div class="option-arrow">→</div>
+            </a>
+
+            <!-- Eliminar Tarjeta -->
+            <a href="{% url 'eliminar_tarjeta_view' %}" class="option-card red">
+              <div class="option-icon">❌</div>
+              <div class="option-content">
+                <h3>Eliminar Tarjeta</h3>
+                <p>Elimina una tarjeta guardada de forma segura</p>
+              </div>
+              <div class="option-arrow">→</div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="{% static 'payments/js/menu_pagos.js' %}"></script>
+  </body>
 </html>

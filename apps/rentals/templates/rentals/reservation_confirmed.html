@@ -1,124 +1,251 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Confirmación de Reserva - TwoMove</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background-color: #f4f6f8;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 600px;
-      margin: 30px auto;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      padding: 30px;
-    }
-    .header {
-      text-align: center;
-      background-color: #0066cc;
-      color: white;
-      padding: 20px;
-      border-radius: 12px 12px 0 0;
-    }
-    .header h1 {
-      margin: 0;
-      font-size: 22px;
-      letter-spacing: 0.5px;
-    }
-    .content {
-      margin-top: 20px;
-      line-height: 1.6;
-    }
-    .content p {
-      margin: 8px 0;
-    }
-    .highlight {
-      color: #0066cc;
-      font-weight: bold;
-    }
-    .card {
-      background-color: #f8f9fa;
-      border-radius: 8px;
-      padding: 15px;
-      margin: 15px 0;
-      border: 1px solid #e0e0e0;
-    }
-    .footer {
-      text-align: center;
-      font-size: 13px;
-      color: #777;
-      margin-top: 20px;
-      border-top: 1px solid #ddd;
-      padding-top: 15px;
-    }
-    .code {
-      display: inline-block;
-      background: #0066cc;
-      color: white;
-      padding: 10px 16px;
-      border-radius: 6px;
-      font-size: 18px;
-      letter-spacing: 2px;
-      margin: 10px 0;
-    }
-    .btn {
-      display: inline-block;
-      margin-top: 15px;
-      background-color: #0066cc;
-      color: #fff !important;
-      text-decoration: none;
-      padding: 12px 20px;
-      border-radius: 6px;
-      font-weight: bold;
-    }
-  </style>
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Confirmación de Reserva - TwoMove</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: linear-gradient(135deg, #f7fafc 0%, #e6f7ff 100%);
+        color: #2d3748;
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+        overflow: hidden;
+      }
+      .header {
+        text-align: center;
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        color: white;
+        padding: 35px 20px;
+        position: relative;
+      }
+      .header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(
+          circle at 30% 50%,
+          rgba(255, 255, 255, 0.15) 0%,
+          transparent 50%
+        );
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        letter-spacing: 0.5px;
+      }
+      .header-icon {
+        font-size: 50px;
+        margin-bottom: 10px;
+        display: block;
+      }
+      .content {
+        padding: 35px;
+      }
+      .content p {
+        margin: 0 0 16px 0;
+        color: #4a5568;
+        font-size: 15px;
+      }
+      .greeting {
+        font-size: 16px;
+        color: #1a202c;
+        margin-bottom: 20px;
+      }
+      .highlight {
+        color: #38a169;
+        font-weight: 700;
+      }
+      .card {
+        background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 25px 0;
+        border: 2px solid #48bb78;
+        box-shadow: 0 4px 12px rgba(72, 187, 120, 0.15);
+      }
+      .card p {
+        margin: 12px 0;
+        color: #2d3748;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .card p strong {
+        color: #22543d;
+        min-width: 180px;
+        font-weight: 600;
+      }
+      .footer {
+        text-align: center;
+        font-size: 14px;
+        color: #718096;
+        margin-top: 30px;
+        padding-top: 25px;
+        border-top: 2px solid #e2e8f0;
+      }
+      .footer p {
+        margin: 8px 0;
+      }
+      .footer strong {
+        color: #38a169;
+        font-weight: 700;
+      }
+      .code {
+        display: inline-block;
+        background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 4px;
+        margin: 10px 0;
+        box-shadow: 0 4px 12px rgba(56, 161, 105, 0.3);
+        font-family: "Courier New", monospace;
+      }
+      .btn {
+        display: inline-block;
+        margin-top: 20px;
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        color: #fff !important;
+        text-decoration: none;
+        padding: 14px 28px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 15px;
+        box-shadow: 0 6px 20px rgba(72, 187, 120, 0.3);
+        transition: all 0.2s ease;
+        text-align: center;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(72, 187, 120, 0.4);
+      }
+      .info-message {
+        background: linear-gradient(135deg, #fff7e6 0%, #ffd591 100%);
+        border-left: 4px solid #faad14;
+        padding: 15px 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+        color: #744210;
+      }
+      .info-message p {
+        margin: 0;
+        color: #744210;
+      }
+      .divider {
+        height: 2px;
+        background: linear-gradient(
+          to right,
+          transparent,
+          #e2e8f0,
+          transparent
+        );
+        margin: 25px 0;
+      }
+      .emoji {
+        font-size: 20px;
+        margin-right: 5px;
+      }
+      .success-badge {
+        display: inline-block;
+        background: #c6f6d5;
+        color: #22543d;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 15px;
+      }
+    </style>
+  </head>
 
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>🚲 ¡Reserva confirmada!</h1>
-    </div>
-
-    <div class="content">
-      <p>Hola <strong>{{ usuario.nombre|default:usuario.email }}</strong>,</p>
-      <p>
-        Tu reserva de bicicleta ha sido confirmada correctamente.  
-        A continuación encontrarás los detalles de tu reserva:
-      </p>
-
-      <div class="card">
-        <p><strong>📍 Estación de origen:</strong> {{ estacion }}</p>
-        <p><strong>🚲 Bicicleta:</strong> {{ bicicleta }}</p>
-        <p><strong>🕓 Tipo de viaje:</strong> 
-          {% if tipo_viaje == 'ultima_milla' %}Última Milla{% else %}Recorrido Largo{% endif %}
-        </p>
-        <p><strong>💳 Método de pago:</strong> 
-          {% if metodo_pago == 'wallet' %}Wallet TwoMove{% else %}Tarjeta registrada{% endif %}
-        </p>
-        <p><strong>🔐 Código de desbloqueo:</strong></p>
-        <p class="code">{{ codigo }}</p>
+  <body>
+    <div class="container">
+      <div class="header">
+        <span class="header-icon">🚲</span>
+        <h1>¡Reserva Confirmada!</h1>
       </div>
 
-      <p>
-        Puedes iniciar tu viaje desde la app o acercándote al punto TwoMove correspondiente.  
-        Este código de desbloqueo es personal e intransferible.
-      </p>
+      <div class="content">
+        <p class="greeting">
+          Hola <strong>{{ usuario.nombre|default:usuario.email }}</strong>,
+        </p>
+        <p>
+          <span class="success-badge">✅ Confirmada</span><br />
+          Tu reserva de bicicleta ha sido confirmada correctamente. A
+          continuación encontrarás los detalles de tu reserva:
+        </p>
 
-      <a href="https://twomove.co" class="btn">Ir a TwoMove</a>
+        <div class="card">
+          <p>
+            <strong><span class="emoji">📍</span> Estación de origen:</strong>
+            {{ estacion_origen }}
+          </p>
+          <p>
+            <strong><span class="emoji">🎯</span> Estación de destino:</strong>
+            {{ estacion_destino }}
+          </p>
+          <p>
+            <strong><span class="emoji">🚲</span> Bicicleta:</strong>
+            {{ bicicleta }}
+          </p>
+          <p>
+            <strong><span class="emoji">🕓</span> Tipo de viaje:</strong>
+            {% if tipo_viaje == 'ultima_milla' %}Última Milla{% else %}Recorrido
+            Largo{% endif %}
+          </p>
+          <p>
+            <strong><span class="emoji">💳</span> Método de pago:</strong>
+            {% if metodo_pago == 'wallet' %}Wallet TwoMove{% else %}Tarjeta
+            registrada{% endif %}
+          </p>
+          <p>
+            <strong><span class="emoji">🔐</span> Código de desbloqueo:</strong>
+          </p>
+          <p class="code">{{ codigo }}</p>
+        </div>
 
-      <div class="footer">
-        <p>Gracias por usar <strong>TwoMove</strong> 🚴‍♂️</p>
-        <p>© {{ now|date:"Y" }} TwoMove — Todos los derechos reservados.</p>
+        <div class="divider"></div>
+
+        <div class="info-message">
+          <p>
+            💡 <strong>Información importante:</strong> Puedes iniciar tu viaje
+            desde la app o acercándote al punto TwoMove correspondiente. Este
+            código de desbloqueo es personal e intransferible.
+          </p>
+        </div>
+
+        <div style="text-align: center">
+          <a href="https://twomove.co" class="btn">🚴 Ir a TwoMove</a>
+        </div>
+
+        <div class="footer">
+          <p>Gracias por usar <strong>TwoMove</strong> 🚴‍♂️</p>
+          <p style="font-size: 12px; color: #a0aec0; margin-top: 15px">
+            © {{ now|date:"Y" }} TwoMove — Todos los derechos reservados.
+          </p>
+        </div>
       </div>
     </div>
-  </div>
-</body>
+  </body>
 </html>

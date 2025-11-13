@@ -1,5 +1,7 @@
 # apps/users/views.py
 
+from datetime import timedelta
+
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -10,11 +12,92 @@ from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.db.models import Sum
 
 from .forms import RegistroForm, VerificacionForm
 from .models import Usuario, CambioCredenciales
 
+from django.shortcuts import render
+from apps.wallet.models import Wallet
+from apps.rentals.models import Rental
+from apps.payment.models import MetodoTarjeta
+from apps.stations.models import Station
 
+def home_view(request):
+    return render(request, 'users/base.html')
+def dashboard_view(request):
+    user = request.user
+
+    # 🪙 Obtener la billetera del usuario
+    wallet, created = Wallet.objects.get_or_create(usuario=user)
+    saldo_disponible = wallet.balance if wallet else 0
+
+    # 🚴 Viajes del mes actual
+    hoy = timezone.now()
+    inicio_mes = hoy.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    viajes_mes = Rental.objects.filter(
+        usuario=user, 
+        hora_inicio__gte=inicio_mes,
+        estado="finalizado"  # Solo contar viajes completados
+    ).count()
+
+    # ⏱️ Calcular tiempo total de viajes completados
+    # Opción 1: Usando duracion_minutos (RECOMENDADO)
+    tiempo_total_minutos = Rental.objects.filter(
+        usuario=user,
+        estado="finalizado",
+        duracion_minutos__isnull=False
+    ).aggregate(total=Sum('duracion_minutos'))['total'] or 0
+    
+    horas = tiempo_total_minutos // 60
+    minutos = tiempo_total_minutos % 60
+    tiempo_total_str = f"{int(horas)}h {int(minutos)}min"
+    
+    # Opción 2: Calculando manualmente (ALTERNATIVA si prefieres)
+    # rentals = Rental.objects.filter(
+    #     usuario=user,
+    #     hora_fin__isnull=False,
+    #     hora_inicio__isnull=False  # 👈 IMPORTANTE: Validar que ambos existan
+    # )
+    # tiempo_total = timedelta()
+    # for viaje in rentals:
+    #     if viaje.hora_fin and viaje.hora_inicio:  # 👈 Doble validación
+    #         tiempo_total += (viaje.hora_fin - viaje.hora_inicio)
+    # horas, resto = divmod(tiempo_total.total_seconds(), 3600)
+    # minutos = int(resto // 60)
+    # tiempo_total_str = f"{int(horas)}h {minutos}min"
+
+    # ⭐ Nivel según cantidad de viajes totales (no solo del mes)
+    total_viajes = Rental.objects.filter(usuario=user, estado="finalizado").count()
+    if total_viajes == 0:
+        nivel = "Nuevo"
+    elif total_viajes < 5:
+        nivel = "Principiante"
+    elif total_viajes < 20:
+        nivel = "Intermedio"
+    elif total_viajes < 50:
+        nivel = "Avanzado"
+    else:
+        nivel = "Experto"
+
+    # 💳 Últimos pagos (si tienes modelo Payment)
+    pagos = MetodoTarjeta.objects.filter(usuario=user).order_by('-creado_en')[:5]
+
+    # 📍 Estaciones activas
+    estaciones = Station.objects.all()
+
+    contexto = {
+        "user": user,
+        "wallet": wallet,
+        "saldo_disponible": saldo_disponible,
+        "viajes_mes": viajes_mes,
+        "tiempo_total": tiempo_total_str,
+        "nivel": nivel,
+        "pagos": pagos,
+        "estaciones": estaciones,
+    }
+
+    return render(request, "users/dashboard.html", contexto)
 
 def registro_view(request):
     if request.method == 'POST':
@@ -26,13 +109,13 @@ def registro_view(request):
             # Enviar correo con código de verificación
             send_mail(
                 subject="Código de verificación - TwoMove 🚲",
-                message=f"Tu código de verificación es: {usuario.codigo_verificacion}",
+                message=f"Hola! Tu código de verificación es: {usuario.codigo_verificacion}",
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[usuario.email],
                 fail_silently=False,
             )
 
-            messages.success(request, "Cuenta creada. Revisa tu correo para verificarla.")
+            messages.success(request, "Cuenta creada.")
             return redirect('users:verificar_cuenta')
     else:
         form = RegistroForm()
@@ -74,7 +157,7 @@ def login_view(request):
         if usuario is not None:
             if usuario.estado == 'activo':
                 login(request, usuario)
-                return redirect('users:login')  # Evita el NoReverseMatch temporalmente
+                return redirect('users:dashboard')
 
             else:
                 messages.error(request, "Cuenta no verificada o sancionada.")

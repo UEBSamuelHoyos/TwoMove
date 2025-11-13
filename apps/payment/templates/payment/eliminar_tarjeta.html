@@ -1,31 +1,163 @@
-{% extends 'base.html' %}
-{% block content %}
-<h2>🗑️ Eliminar Tarjeta</h2>
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eliminar Tarjeta - TwoMove</title>
+    <link
+      rel="stylesheet"
+      href="{% static 'payments/css/eliminar_tarjeta.css' %}"
+    />
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">
+          <img
+            src="{% static 'users/images/logo.png' %}"
+            alt="TwoMove"
+            onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:45px;height:45px;background:#2cb5a0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:1.5rem;font-weight:600;\'>T</div>'"
+          />
+        </div>
+        <button class="close-sidebar" id="closeSidebar">✕</button>
+      </div>
 
-{% if messages %}
-  {% for message in messages %}
-    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-      {{ message }}
-    </div>
-  {% endfor %}
-{% endif %}
+      <nav class="sidebar-nav">
+        <a href="{% url 'users:dashboard' %}" class="nav-item">
+          <span class="icon">🏠</span>
+          <span>Inicio</span>
+        </a>
+        <a href="{% url 'menu_pagos' %}" class="nav-item">
+          <span class="icon">💳</span>
+          <span>Saldo y Recargas</span>
+        </a>
+        <a href="{% url 'rentals:start_trip_test' %}" class="nav-item">
+          <span class="icon">🚴</span>
+          <span>Mis Viajes</span>
+        </a>
+        <a href="{% url 'rentals:reservation_test' %}" class="nav-item">
+          <span class="icon">📅</span>
+          <span>Reservar</span>
+        </a>
+        <a href="{% url 'rentals:trip_history' %}" class="nav-item">
+          <span class="icon">📊</span>
+          <span>Historial</span>
+        </a>
+      </nav>
 
-{% if tarjetas %}
-  <ul>
-    {% for tarjeta in tarjetas %}
-      <li>
-        <p><strong>{{ tarjeta.brand }}</strong> ****{{ tarjeta.last4 }} — vence {{ tarjeta.exp_month }}/{{ tarjeta.exp_year }}</p>
-        <form method="POST" action="{% url 'eliminar_tarjeta_id_view' tarjeta.id %}" style="display:inline;">
-          {% csrf_token %}
-          <button type="submit" style="background-color: red; color: white;">Eliminar</button>
-        </form>
-      </li>
-      <hr>
-    {% endfor %}
-  </ul>
-{% else %}
-  <p>No tienes ninguna tarjeta registrada.</p>
-{% endif %}
+      <div class="sidebar-footer">
+        <a href="{% url 'users:logout' %}" class="logout-btn">
+          <span class="icon">🚪</span>
+          <span>Cerrar Sesión</span>
+        </a>
+      </div>
+    </aside>
 
-<a href="{% url 'menu_pagos' %}">← Volver al menú</a>
-{% endblock %}
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="dashboard-header">
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <div class="header-right">
+          <div class="user-info">
+            <span class="user-name">{{ user.nombre|default:"Usuario" }}</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <div class="content-wrapper">
+        <div class="delete-container">
+          <!-- Header Section -->
+          <div class="delete-header">
+            <div class="header-icon">🗑️</div>
+            <h1>Eliminar Tarjeta</h1>
+            <p class="subtitle">Gestiona tus tarjetas de pago registradas</p>
+          </div>
+
+          <!-- Mensajes -->
+          {% if messages %} {% for message in messages %}
+          <div
+            class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %}"
+          >
+            <span class="alert-icon">
+              {% if 'success' in message.tags %}✅ {% elif 'error' in
+              message.tags or 'danger' in message.tags %}❌ {% elif 'warning' in
+              message.tags %}⚠️ {% else %}ℹ️{% endif %}
+            </span>
+            <span>{{ message }}</span>
+          </div>
+          {% endfor %} {% endif %}
+
+          <!-- Cards List -->
+          {% if tarjetas %}
+          <div class="cards-container">
+            {% for tarjeta in tarjetas %}
+            <div class="card-item">
+              <div class="card-info">
+                <div class="card-brand">
+                  <span class="brand-icon">💳</span>
+                  <span class="brand-name">{{ tarjeta.brand|title }}</span>
+                </div>
+                <div class="card-number">
+                  •••• •••• •••• {{ tarjeta.last4 }}
+                </div>
+                <div class="card-expiry">
+                  Vence: {{ tarjeta.exp_month }}/{{ tarjeta.exp_year }}
+                </div>
+              </div>
+
+              <form
+                method="POST"
+                action="{% url 'eliminar_tarjeta_id_view' tarjeta.id %}"
+                class="delete-form"
+                onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta tarjeta?');"
+              >
+                {% csrf_token %}
+                <button type="submit" class="btn-delete">
+                  <span class="btn-icon">🗑️</span>
+                  <span>Eliminar</span>
+                </button>
+              </form>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="no-cards">
+            <div class="no-cards-icon">💳</div>
+            <p class="no-cards-text">No tienes ninguna tarjeta registrada</p>
+            <a href="{% url 'agregar_tarjeta' %}" class="btn-add-card">
+              <span>+</span>
+              <span>Agregar primera tarjeta</span>
+            </a>
+          </div>
+          {% endif %}
+
+          <!-- Back Link -->
+          <div class="back-link">
+            <a href="{% url 'menu_pagos' %}" class="btn-back">
+              <span>←</span>
+              <span>Volver al menú de pagos</span>
+            </a>
+          </div>
+
+          <!-- Info Card -->
+          <div class="info-card">
+            <div class="info-icon">ℹ️</div>
+            <div class="info-text">
+              <strong>Información importante</strong>
+              <p>
+                Al eliminar una tarjeta, ya no podrás usarla para realizar
+                recargas. Esta acción no se puede deshacer.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="{% static 'payments/js/eliminar_tarjeta.js' %}"></script>
+  </body>
+</html>

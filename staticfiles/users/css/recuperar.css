@@ -1,0 +1,506 @@
+/* ===========================
+   🌿 BASE
+=========================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 50%, #93c5fd 100%);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ========================
+   🧭 HEADER (TAMAÑOS IGUALES AL LOGIN)
+======================== */
+.header {
+    background: linear-gradient(90deg, #ffffff 0%, #eff6ff 100%);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 2px solid #bfdbfe;
+    animation: fadeDown 0.5s ease;
+    padding: 1rem 0;
+}
+
+@keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2d3748;
+    text-decoration: none;
+}
+
+.logo-icon {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-icon img {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+}
+
+.welcome-text {
+    font-size: 0.95rem;
+    color: #1e3a8a;
+    text-align: right;
+    font-weight: 500;
+    line-height: 1.4;
+    max-width: 400px;
+    background: rgba(191, 219, 254, 0.45);
+    padding: 0.6rem 1rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.12);
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+}
+
+.welcome-text:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.25);
+}
+
+.welcome-text span {
+    display: block;
+    color: #1e40af;
+    font-size: 0.9rem;
+    margin-top: 2px;
+}
+
+/* ===========================
+   💳 CONTENEDOR RECUPERAR
+=========================== */
+.recuperar-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 8rem 2rem 2rem;
+}
+
+/* ===========================
+   🧾 TARJETA RECUPERAR
+=========================== */
+.recuperar-card {
+    background: linear-gradient(145deg, #ffffff 0%, #fefefe 100%);
+    border-radius: 24px;
+    padding: 2.8rem 3.2rem 3rem;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 50px rgba(59, 130, 246, 0.15);
+    animation: scaleIn 0.6s ease;
+    border: 1px solid rgba(191, 219, 254, 0.4);
+}
+
+@keyframes scaleIn {
+    from { 
+        opacity: 0; 
+        transform: scale(0.95); 
+    }
+    to { 
+        opacity: 1; 
+        transform: scale(1); 
+    }
+}
+
+/* ===========================
+   💙 HEADER DE LA TARJETA
+=========================== */
+.recuperar-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.recuperar-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.2rem;
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    animation: float 3s ease-in-out infinite;
+    transform: rotate(-5deg);
+}
+
+@keyframes float {
+    0%, 100% { transform: rotate(-5deg) translateY(0px); }
+    50% { transform: rotate(-5deg) translateY(-10px); }
+}
+
+.recuperar-card h1 {
+    color: #1e3a8a;
+    font-size: 1.85rem;
+    margin-bottom: 0.6rem;
+    font-weight: 700;
+}
+
+.subtitle {
+    color: #2563eb;
+    font-size: 0.95rem;
+    font-weight: 400;
+}
+
+/* ===========================
+   📋 FORMULARIO
+=========================== */
+.recuperar-form {
+    margin-bottom: 1.8rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #1e293b;
+    margin-bottom: 0.6rem;
+}
+
+.form-group label svg {
+    color: #3b82f6;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 1rem 1.2rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    background: #f8fafc;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    color: #1e293b;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
+}
+
+.form-group input::placeholder {
+    color: #94a3b8;
+}
+
+.form-hint {
+    display: block;
+    font-size: 0.82rem;
+    color: #64748b;
+    margin-top: 0.5rem;
+}
+
+/* ===========================
+   🚀 BOTÓN RECUPERAR
+=========================== */
+.btn-recuperar {
+    width: 100%;
+    padding: 1.1rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.02rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+}
+
+.btn-recuperar:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(59, 130, 246, 0.5);
+}
+
+.btn-recuperar:active {
+    transform: translateY(-1px);
+}
+
+.btn-recuperar svg {
+    transition: transform 0.3s ease;
+}
+
+.btn-recuperar:hover svg {
+    transform: rotate(45deg);
+}
+
+/* ===========================
+   ℹ️ INFO BOX
+=========================== */
+.info-box {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 2px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.8rem;
+    display: flex;
+    gap: 1rem;
+    align-items: start;
+}
+
+.info-box svg {
+    color: #3b82f6;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.info-box strong {
+    display: block;
+    color: #1e40af;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+}
+
+.info-box p {
+    color: #475569;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ===========================
+   🔗 FOOTER DEL FORMULARIO
+=========================== */
+.form-footer {
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.separator {
+    color: #cbd5e1;
+    font-weight: 300;
+}
+
+.link-login,
+.link-registro {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.link-login:hover,
+.link-registro:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+.link-login svg {
+    transition: transform 0.2s ease;
+}
+
+.link-login:hover svg {
+    transform: translateX(-3px);
+}
+
+/* ===========================
+   ⚠️ MENSAJES
+=========================== */
+.messages-container {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    padding: 1rem 1.2rem;
+    border-radius: 12px;
+    margin-bottom: 0.8rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    animation: slideDownAlert 0.4s ease;
+}
+
+@keyframes slideDownAlert {
+    from { 
+        opacity: 0; 
+        transform: translateY(-10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+.alert svg {
+    flex-shrink: 0;
+}
+
+.alert-success {
+    background: #dbeafe;
+    color: #1e40af;
+    border-left: 4px solid #3b82f6;
+}
+
+.alert-success svg {
+    color: #3b82f6;
+}
+
+.alert-danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.alert-danger svg {
+    color: #ef4444;
+}
+
+.alert-warning {
+    background: #fef3c7;
+    color: #92400e;
+    border-left: 4px solid #f59e0b;
+}
+
+.alert-warning svg {
+    color: #f59e0b;
+}
+
+/* ========================
+   ↩️ ENLACE VOLVER
+======================== */
+.back-link {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.back-link a {
+    color: #475569;
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.back-link a:hover {
+    color: #1e40af;
+}
+
+.back-link svg {
+    transition: transform 0.2s ease;
+}
+
+.back-link a:hover svg {
+    transform: scale(1.1);
+}
+
+/* ===========================
+   📱 RESPONSIVO
+=========================== */
+@media (max-width: 768px) {
+    .nav-container {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .welcome-text {
+        max-width: 100%;
+        font-size: 0.9rem;
+        text-align: center;
+        line-height: 1.5;
+        background: rgba(191, 219, 254, 0.4);
+        padding: 0.7rem 1rem;
+        box-shadow: none;
+    }
+
+    .welcome-text span {
+        font-size: 0.85rem;
+    }
+
+    .recuperar-card {
+        padding: 2.2rem 2rem;
+    }
+
+    .form-footer {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .separator {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-text {
+        display: none;
+    }
+
+    .logo-icon img {
+        width: 110px;
+    }
+
+    .recuperar-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .recuperar-card h1 {
+        font-size: 1.6rem;
+    }
+
+    .btn-recuperar {
+        font-size: 0.95rem;
+        padding: 1rem;
+    }
+
+    .info-box {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+}

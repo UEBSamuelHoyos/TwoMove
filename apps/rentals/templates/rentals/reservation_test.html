@@ -1,208 +1,303 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reserva de Bicicletas - MVP</title>
-    <style>
-        body {
-            font-family: "Segoe UI", sans-serif;
-            background: #f6f6f6;
-            padding: 40px;
-            color: #333;
-        }
-        h1 {
-            color: #0074D9;
-            text-align: center;
-        }
-        .container {
-            max-width: 520px;
-            background: white;
-            margin: 0 auto;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: bold;
-        }
-        select, input, button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 6px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
-        button {
-            background-color: #0074D9;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button:hover {
-            background-color: #005fa3;
-        }
-        #resultado {
-            margin-top: 25px;
-            background: #f0f8ff;
-            border-left: 5px solid #0074D9;
-            padding: 15px;
-            border-radius: 8px;
-            display: none;
-        }
-        .disponible {
-            color: green;
-            font-weight: bold;
-        }
-        .agotado {
-            color: red;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-    <h1>🚲 Sistema de Bicicletas Compartidas</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reservar Bicicleta - TwoMove</title>
+    <link rel="stylesheet" href="{% static 'rentals/css/reserve_bike.css' %}" />
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">
+          <img
+            src="{% static 'users/images/logo.png' %}"
+            alt="TwoMove"
+            onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:45px;height:45px;background:#2cb5a0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:1.5rem;font-weight:600;\'>T</div>'"
+          />
+        </div>
+        <button class="close-sidebar" id="closeSidebar">✕</button>
+      </div>
 
-    <div class="container">
-        <!-- Estación de origen -->
-        <label for="estacion_origen">Estación de origen</label>
-        <select id="estacion_origen"></select>
+      <nav class="sidebar-nav">
+        <a href="{% url 'users:dashboard' %}" class="nav-item">
+          <span class="icon">🏠</span>
+          <span>Inicio</span>
+        </a>
+        <a href="{% url 'menu_pagos' %}" class="nav-item">
+          <span class="icon">💳</span>
+          <span>Saldo y Recargas</span>
+        </a>
+        <a href="{% url 'rentals:start_trip_test' %}" class="nav-item">
+          <span class="icon">🚴</span>
+          <span>Mis Viajes</span>
+        </a>
+        <a href="{% url 'rentals:reservation_test' %}" class="nav-item">
+          <span class="icon">📅</span>
+          <span>Reservar</span>
+        </a>
+        <a
+          href="{% url 'rentals:cancel_reservation_test' %}"
+          class="nav-item active"
+        >
+          <span class="icon">❌</span>
+          <span>Cancelar Reserva</span>
+        </a>
+        <a href="{% url 'rentals:trip_history' %}" class="nav-item">
+          <span class="icon">📊</span>
+          <span>Historial</span>
+        </a>
+      </nav>
 
-        <!-- Estación de destino -->
-        <label for="estacion_destino">Estación de destino</label>
-        <select id="estacion_destino"></select>
+      <div class="sidebar-footer">
+        <a href="{% url 'users:logout' %}" class="logout-btn">
+          <span class="icon">🚪</span>
+          <span>Cerrar Sesión</span>
+        </a>
+      </div>
+    </aside>
 
-        <label for="fecha">Fecha de la reserva</label>
-        <input type="date" id="fecha" required>
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="dashboard-header">
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <div class="header-right">
+          <div class="user-info">
+            <span class="user-name">{{ user.nombre|default:"Usuario" }}</span>
+          </div>
+        </div>
+      </header>
 
-        <label for="hora">Hora de inicio</label>
-        <input type="time" id="hora" required>
+      <div class="content-wrapper">
+        <h1>Reservar Bicicleta 🚲</h1>
+        <p class="subtitle">Planifica tu próximo viaje en bicicleta</p>
 
-        <label for="tipo">Tipo de bicicleta</label>
-        <select id="tipo">
-            <option value="electric">Eléctrica</option>
-            <option value="manual">Convencional</option>
-        </select>
+        <!-- Alert Message -->
+        <div
+          id="alertMessage"
+          class="alert-container"
+          style="display: none"
+        ></div>
 
-        <label for="tipo_viaje">Tipo de viaje</label>
-        <select id="tipo_viaje">
-            <option value="ultima_milla">Última Milla (45 min máx)</option>
-            <option value="recorrido_largo">Recorrido Largo (75 min máx)</option>
-        </select>
+        <!-- Saldo Disponible -->
+        <div class="balance-banner">
+          <div class="balance-info">
+            <span class="balance-label">💰 Saldo Disponible</span>
+            <span class="balance-value"
+              >${{ user.wallet.balance|default:"0" }} COP</span
+            >
+          </div>
+          <a href="{% url 'recargar_saldo' %}" class="btn-recharge-small">
+            Recargar
+          </a>
+        </div>
 
-        <label for="metodo">Método de pago</label>
-        <select id="metodo">
-            <option value="wallet">Saldo en App</option>
-            <option value="card">Tarjeta de Crédito</option>
-        </select>
+        <!-- Formulario de Reserva -->
+        <div class="reserve-container">
+          <!-- Columna 1: Estaciones y Fecha -->
+          <div class="reserve-card">
+            <div class="card-header">
+              <span class="header-icon">📍</span>
+              <h3>Ruta y Horario</h3>
+            </div>
 
-        <button id="reservar">Reservar Bicicleta</button>
+            <div class="form-group">
+              <label for="estacionOrigen">
+                <span class="label-icon">🔵</span>
+                Estación de Origen
+              </label>
+              <select id="estacionOrigen" class="form-select">
+                <option value="">Cargando estaciones...</option>
+              </select>
+              <p class="helper-text">Selecciona dónde recogerás la bicicleta</p>
+            </div>
 
-        <div id="resultado"></div>
+            <div class="form-group">
+              <label for="estacionDestino">
+                <span class="label-icon">🔴</span>
+                Estación de Destino
+              </label>
+              <select id="estacionDestino" class="form-select">
+                <option value="">Cargando estaciones...</option>
+              </select>
+              <p class="helper-text">
+                Selecciona dónde devolverás la bicicleta
+              </p>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="fechaReserva">
+                  <span class="label-icon">📅</span>
+                  Fecha
+                </label>
+                <input type="date" id="fechaReserva" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label for="horaReserva">
+                  <span class="label-icon">⏰</span>
+                  Hora
+                </label>
+                <input type="time" id="horaReserva" class="form-input" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna 2: Tipo de Bici y Pago -->
+          <div class="reserve-card">
+            <div class="card-header">
+              <span class="header-icon">🚴</span>
+              <h3>Preferencias</h3>
+            </div>
+
+            <div class="form-group">
+              <label for="tipoBicicleta">
+                <span class="label-icon">⚡</span>
+                Tipo de Bicicleta
+              </label>
+              <div class="bike-type-selector">
+                <div class="bike-option" data-value="electric">
+                  <div class="bike-icon">⚡</div>
+                  <div class="bike-info">
+                    <h4>Eléctrica</h4>
+                    <p>Más rápida y cómoda</p>
+                  </div>
+                  <input
+                    type="radio"
+                    name="tipoBicicleta"
+                    value="electric"
+                    checked
+                  />
+                </div>
+                <div class="bike-option" data-value="manual">
+                  <div class="bike-icon">🚴</div>
+                  <div class="bike-info">
+                    <h4>Convencional</h4>
+                    <p>Ejercicio tradicional</p>
+                  </div>
+                  <input type="radio" name="tipoBicicleta" value="manual" />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="tipoViaje">
+                <span class="label-icon">🛣️</span>
+                Tipo de Viaje
+              </label>
+              <select id="tipoViaje" class="form-select">
+                <option value="ultima_milla">Última Milla (45 min máx)</option>
+                <option value="recorrido_largo">
+                  Recorrido Largo (75 min máx)
+                </option>
+              </select>
+              <p class="helper-text">El tiempo determina el costo del viaje</p>
+            </div>
+
+            <div class="form-group">
+              <label for="metodoPago">
+                <span class="label-icon">💳</span>
+                Método de Pago
+              </label>
+              <select id="metodoPago" class="form-select">
+                <option value="wallet">💰 Saldo en App</option>
+                <option value="card">💳 Tarjeta de Crédito</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resumen de Reserva -->
+        <div class="summary-card" id="summaryCard" style="display: none">
+          <div class="card-header">
+            <span class="header-icon">📋</span>
+            <h3>Resumen de tu Reserva</h3>
+          </div>
+          <div class="summary-content">
+            <div class="summary-row">
+              <span>🔵 Origen:</span>
+              <strong id="summaryOrigen">-</strong>
+            </div>
+            <div class="summary-row">
+              <span>🔴 Destino:</span>
+              <strong id="summaryDestino">-</strong>
+            </div>
+            <div class="summary-row">
+              <span>📅 Fecha y Hora:</span>
+              <strong id="summaryFechaHora">-</strong>
+            </div>
+            <div class="summary-row">
+              <span>🚴 Tipo de Bicicleta:</span>
+              <strong id="summaryBici">-</strong>
+            </div>
+            <div class="summary-row">
+              <span>🛣️ Tipo de Viaje:</span>
+              <strong id="summaryTipoViaje">-</strong>
+            </div>
+            <div class="summary-row highlight">
+              <span>💰 Costo Estimado:</span>
+              <strong id="summaryCosto">Calculando...</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón de Reservar -->
+        <div class="action-section">
+          <button id="btnReservar" class="btn-reserve">
+            <span class="btn-icon">✅</span>
+            Confirmar Reserva
+          </button>
+        </div>
+
+        <!-- Info Cards -->
+        <div class="info-cards">
+          <div class="info-card">
+            <span class="info-icon">⏱️</span>
+            <div>
+              <h4>Tiempos de Viaje</h4>
+              <p>
+                <strong>Última Milla:</strong> Hasta 45 minutos<br />
+                <strong>Recorrido Largo:</strong> Hasta 75 minutos
+              </p>
+            </div>
+          </div>
+          <div class="info-card">
+            <span class="info-icon">💡</span>
+            <div>
+              <h4>Consejo</h4>
+              <p>
+                Reserva con anticipación para asegurar disponibilidad en las
+                estaciones más concurridas.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal de Confirmación -->
+    <div id="confirmModal" class="modal" style="display: none">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>✅ Reserva Confirmada</h3>
+          <button class="modal-close" id="modalClose">✕</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+          <!-- Contenido dinámico -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn-primary" id="btnVerReservas">
+            Ver Mis Reservas
+          </button>
+          <button class="btn-secondary" id="btnNuevaReserva">
+            Nueva Reserva
+          </button>
+        </div>
+      </div>
     </div>
 
-    <script>
-        // 🚦 Cargar estaciones al iniciar
-        async function cargarEstaciones() {
-            const selects = [document.getElementById("estacion_origen"), document.getElementById("estacion_destino")];
-            try {
-                const resp = await fetch("/estaciones/stations/");
-                if (!resp.ok) throw new Error("No se pudo cargar la lista de estaciones.");
-                const data = await resp.json();
-
-                selects.forEach(select => {
-                    select.innerHTML = "";
-                    const def = document.createElement("option");
-                    def.value = "";
-                    def.textContent = "-- Selecciona una estación --";
-                    select.appendChild(def);
-
-                    data.forEach(est => {
-                        const option = document.createElement("option");
-                        option.value = est.id;
-                        option.textContent = `${est.nombre} — 🟢 ${est.disponibles_electricas} eléctricas / ⚙️ ${est.disponibles_mecanicas} mecánicas`;
-
-                        if (est.total_disponibles === 0) {
-                            option.disabled = true;
-                            option.textContent += " (Agotada)";
-                        }
-
-                        select.appendChild(option);
-                    });
-                });
-            } catch (err) {
-                alert("Error al cargar estaciones: " + err.message);
-            }
-        }
-
-        // 🚴‍♂️ Crear reserva
-        async function crearReserva() {
-            const estacionOrigen = document.getElementById("estacion_origen").value;
-            const estacionDestino = document.getElementById("estacion_destino").value;
-            const tipo = document.getElementById("tipo").value;
-            const tipoViaje = document.getElementById("tipo_viaje").value;
-            const metodo = document.getElementById("metodo").value;
-            const fecha = document.getElementById("fecha").value;
-            const hora = document.getElementById("hora").value;
-
-            if (!estacionOrigen || !estacionDestino || !fecha || !hora) {
-                alert("Por favor completa todos los campos antes de reservar.");
-                return;
-            }
-
-            if (estacionOrigen === estacionDestino) {
-                alert("La estación de destino debe ser diferente a la de origen.");
-                return;
-            }
-
-            const body = {
-                estacion_origen_id: estacionOrigen,
-                estacion_destino_id: estacionDestino,
-                tipo_bicicleta: tipo,
-                tipo_viaje: tipoViaje,
-                metodo_pago: metodo,
-                fecha_reserva: fecha,
-                hora_reserva: hora
-            };
-
-            const resp = await fetch("/alquileres/api/rentals/reserve/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": getCSRFToken()
-                },
-                body: JSON.stringify(body)
-            });
-
-            const resultado = document.getElementById("resultado");
-            resultado.style.display = "block";
-
-            if (resp.ok) {
-                const data = await resp.json();
-                resultado.innerHTML = `
-                    <h3>✅ Reserva Confirmada</h3>
-                    <p><b>Origen:</b> ${data.estacion_origen}</p>
-                    <p><b>Destino:</b> ${data.estacion_destino}</p>
-                    <p><b>Bicicleta:</b> ${data.bike_serial_reservada}</p>
-                    <p><b>Código de desbloqueo:</b> <code>${data.codigo_desbloqueo}</code></p>
-                    <p><b>Método de pago:</b> ${data.metodo_pago}</p>
-                    <p><b>Fecha:</b> ${fecha} — ${hora}</p>
-                `;
-            } else {
-                const error = await resp.json();
-                resultado.innerHTML = `<h3>⚠️ Error:</h3><p>${error.detail || "No se pudo completar la reserva."}</p>`;
-            }
-        }
-
-        function getCSRFToken() {
-            const cookieValue = document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)');
-            return cookieValue ? cookieValue.pop() : "";
-        }
-
-        document.getElementById("reservar").addEventListener("click", crearReserva);
-        cargarEstaciones();
-    </script>
-</body>
+    <script src="{% static 'rentals/js/reserve_bike.js' %}"></script>
+  </body>
 </html>
