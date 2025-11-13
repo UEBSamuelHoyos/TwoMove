@@ -1,125 +1,239 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Finalizar viaje - TwoMove</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
-  <!-- 🔒 CSRF token embebido -->
-  <meta name="csrf-token" content="{{ csrf_token }}">
-</head>
-
-<body class="bg-light">
-<div class="container py-5">
-  <div class="card shadow-lg border-0">
-    <div class="card-header bg-primary text-white text-center">
-      <h4 class="mb-0">🚲 Finalizar mi viaje</h4>
-    </div>
-
-    <div class="card-body">
-      <p class="text-muted mb-4">
-        Este botón cerrará tu viaje activo y generará la factura automáticamente.
-      </p>
-
-      <div id="alerta" style="display:none;" class="alert" role="alert"></div>
-
-      <div id="viaje-info" style="display:none;">
-        <h6>📍 Viaje activo detectado:</h6>
-        <ul class="list-group mb-3">
-          <li class="list-group-item"><strong>Origen:</strong> <span id="origen"></span></li>
-          <li class="list-group-item"><strong>Destino:</strong> <span id="destino"></span></li>
-          <li class="list-group-item"><strong>Bicicleta:</strong> <span id="bici"></span></li>
-        </ul>
-        <button id="finalizarBtn" class="btn btn-success w-100">✅ Finalizar viaje</button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Finalizar Viaje - TwoMove</title>
+    <link rel="stylesheet" href="{% static 'rentals/css/end_trip.css' %}" />
+    <!-- 🔒 CSRF token embebido -->
+    <meta name="csrf-token" content="{{ csrf_token }}" />
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">
+          <img
+            src="{% static 'users/images/logo.png' %}"
+            alt="TwoMove"
+            onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:45px;height:45px;background:#2cb5a0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:1.5rem;font-weight:600;\'>T</div>'"
+          />
+        </div>
+        <button class="close-sidebar" id="closeSidebar">✕</button>
       </div>
-    </div>
 
-    <div id="resultado" class="card-footer bg-light" style="display:none;">
-      <h5 class="text-success text-center">📋 Resultados del viaje</h5>
-      <ul class="list-group">
-        <li class="list-group-item"><strong>Costo total:</strong> <span id="res_costo"></span> COP</li>
-        <li class="list-group-item"><strong>Duración:</strong> <span id="res_duracion"></span> min</li>
-        <li class="list-group-item"><strong>Estación destino:</strong> <span id="res_destino"></span></li>
-      </ul>
-    </div>
-  </div>
-</div>
+      <nav class="sidebar-nav">
+        <a href="{% url 'users:dashboard' %}" class="nav-item">
+          <span class="icon">🏠</span>
+          <span>Inicio</span>
+        </a>
+        <a href="{% url 'menu_pagos' %}" class="nav-item">
+          <span class="icon">💳</span>
+          <span>Saldo y Recargas</span>
+        </a>
+        <a href="{% url 'rentals:start_trip_test' %}" class="nav-item">
+          <span class="icon">🚴</span>
+          <span>Mis Viajes</span>
+        </a>
+        <a href="{% url 'rentals:reservation_test' %}" class="nav-item">
+          <span class="icon">📅</span>
+          <span>Reservar</span>
+        </a>
+        <a href="{% url 'rentals:trip_history' %}" class="nav-item">
+          <span class="icon">📊</span>
+          <span>Historial</span>
+        </a>
+      </nav>
 
-<script>
-// === 🔒 Obtener token CSRF desde cookies o meta ===
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== "") {
-    const cookies = document.cookie.split(";");
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + "=")) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
-const csrftoken = getCookie("csrftoken") || document.querySelector('meta[name="csrf-token"]').content;
-axios.defaults.headers.common["X-CSRFToken"] = csrftoken;
+      <div class="sidebar-footer">
+        <a href="{% url 'users:logout' %}" class="logout-btn">
+          <span class="icon">🚪</span>
+          <span>Cerrar Sesión</span>
+        </a>
+      </div>
+    </aside>
 
-// === 🚲 Cargar viaje activo ===
-async function cargarViajeActivo() {
-  try {
-    const res = await axios.get("/alquileres/api/rentals/mis_reservas/");
-    const reservas = res.data || [];
-    const activa = reservas.find(r => r.estado === "activo");
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="dashboard-header">
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <div class="header-right">
+          <div class="user-info">
+            <span class="user-name">{{ user.nombre|default:"Usuario" }}</span>
+          </div>
+        </div>
+      </header>
 
-    if (!activa) {
-      mostrarAlerta("No tienes ningún viaje activo actualmente.", "warning");
-      return;
-    }
+      <div class="content-wrapper">
+        <h1>Finalizar Viaje 🏁</h1>
+        <p class="subtitle">
+          Completa tu recorrido y revisa el resumen de tu viaje
+        </p>
 
-    document.getElementById("viaje-info").style.display = "block";
-    document.getElementById("origen").innerText = activa.estacion_origen;
-    document.getElementById("destino").innerText = activa.estacion_destino || "No especificada";
-    document.getElementById("bici").innerText = activa.bike_serial_reservada || "N/A";
-    document.getElementById("finalizarBtn").onclick = () => finalizarViaje(activa.id);
+        <!-- Alert Message -->
+        <div
+          id="alertMessage"
+          class="alert-container"
+          style="display: none"
+        ></div>
 
-  } catch (err) {
-    mostrarAlerta("Error al cargar tus reservas activas.", "danger");
-    console.error(err);
-  }
-}
+        <!-- Main Container -->
+        <div class="end-trip-container">
+          <!-- Card: Viaje Activo -->
+          <div class="trip-card" id="viajeActivoCard" style="display: none">
+            <div class="card-header">
+              <span class="header-icon">🚴‍♂️</span>
+              <h3>Tu Viaje Activo</h3>
+            </div>
 
-// === ✅ Finalizar viaje ===
-async function finalizarViaje(rental_id) {
-  try {
-    const res = await axios.post("/alquileres/api/rentals/end_trip/", { rental_id });
-    const data = res.data;
+            <div class="active-badge">
+              <span class="pulse-dot"></span>
+              En curso
+            </div>
 
-    document.getElementById("resultado").style.display = "block";
-    document.getElementById("res_costo").innerText = data.costo_total?.toLocaleString("es-CO");
-    document.getElementById("res_duracion").innerText = data.duracion_minutos;
-    document.getElementById("res_destino").innerText = data.estacion_destino || "N/A";
+            <div class="trip-details">
+              <div class="detail-row">
+                <span class="detail-label">
+                  <span class="emoji">📍</span> Estación de origen:
+                </span>
+                <span class="detail-value" id="origenValue">-</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">
+                  <span class="emoji">🎯</span> Estación destino:
+                </span>
+                <span class="detail-value" id="destinoValue">-</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">
+                  <span class="emoji">🚲</span> Bicicleta:
+                </span>
+                <span class="detail-value" id="biciValue">-</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">
+                  <span class="emoji">🕓</span> Tipo de viaje:
+                </span>
+                <span class="detail-value" id="tipoValue">-</span>
+              </div>
+            </div>
 
-    mostrarAlerta(data.mensaje || "Viaje finalizado correctamente.", "success");
+            <button class="btn-end" id="finalizarBtn">
+              <span class="btn-icon">✅</span>
+              Finalizar Viaje
+            </button>
+          </div>
 
-  } catch (err) {
-    console.error(err);
-    const msg = err.response?.data?.detail || err.response?.data?.error || "Error al finalizar viaje.";
-    mostrarAlerta(msg, "danger");
-  }
-}
+          <!-- Card: Cargando -->
+          <div class="trip-card" id="loadingCard">
+            <div class="loading-state">
+              <div class="spinner"></div>
+              <p>Buscando viaje activo...</p>
+            </div>
+          </div>
 
-// === 💬 Función auxiliar para mostrar alertas ===
-function mostrarAlerta(texto, tipo) {
-  const alerta = document.getElementById("alerta");
-  alerta.className = "alert alert-" + tipo;
-  alerta.innerText = texto;
-  alerta.style.display = "block";
-}
+          <!-- Card: Sin viajes activos -->
+          <div class="trip-card" id="emptyCard" style="display: none">
+            <div class="empty-state">
+              <div class="empty-state-icon">🚲</div>
+              <h3>No tienes viajes activos</h3>
+              <p>Inicia un nuevo viaje para poder finalizarlo aquí</p>
+              <a
+                href="{% url 'rentals:start_trip_test' %}"
+                class="btn-start-new"
+              >
+                <span class="btn-icon">▶️</span>
+                Iniciar Viaje
+              </a>
+            </div>
+          </div>
 
-cargarViajeActivo();
-</script>
-</body>
+          <!-- Card: Resultados -->
+          <div
+            class="trip-card results-card"
+            id="resultsCard"
+            style="display: none"
+          >
+            <div class="card-header success-header">
+              <span class="header-icon">✅</span>
+              <h3>¡Viaje Completado!</h3>
+            </div>
+
+            <div class="success-message">
+              <p>Tu viaje ha sido finalizado exitosamente</p>
+            </div>
+
+            <div class="results-details">
+              <div class="result-item highlight">
+                <span class="result-label">💰 Costo Total</span>
+                <span class="result-value total" id="resCosto">-</span>
+              </div>
+              <div class="divider-small"></div>
+              <div class="result-item">
+                <span class="result-label">⏱️ Duración</span>
+                <span class="result-value" id="resDuracion">-</span>
+              </div>
+              <div class="result-item">
+                <span class="result-label">🎯 Estación final</span>
+                <span class="result-value" id="resDestino">-</span>
+              </div>
+              <div class="result-item">
+                <span class="result-label">📅 Fecha finalización</span>
+                <span class="result-value" id="resFecha">-</span>
+              </div>
+            </div>
+
+            <div class="info-message">
+              <p>
+                📄 <strong>Factura enviada:</strong> Hemos enviado los detalles
+                de tu viaje a tu correo electrónico.
+              </p>
+            </div>
+
+            <div class="action-buttons">
+              <a
+                href="{% url 'rentals:start_trip_test' %}"
+                class="btn-secondary"
+              >
+                <span class="btn-icon">🚴</span>
+                Nuevo Viaje
+              </a>
+              <a href="#" class="btn-primary">
+                <span class="btn-icon">📊</span>
+                Ver Historial
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Cards -->
+        <div class="info-cards">
+          <div class="info-card">
+            <span class="info-icon">💡</span>
+            <div>
+              <h4>¿Cómo finalizar?</h4>
+              <p>
+                Simplemente presiona el botón "Finalizar Viaje" cuando llegues a
+                tu destino. El sistema calculará automáticamente el costo de tu
+                recorrido.
+              </p>
+            </div>
+          </div>
+          <div class="info-card">
+            <span class="info-icon">📧</span>
+            <div>
+              <h4>Recibo automático</h4>
+              <p>
+                Al finalizar tu viaje, recibirás un correo con el resumen
+                detallado y la factura en formato PDF.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="{% static 'rentals/js/end_trip.js' %}"></script>
+  </body>
 </html>

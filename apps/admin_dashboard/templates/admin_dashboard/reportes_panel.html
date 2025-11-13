@@ -1,115 +1,398 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Reportes | TwoMove</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      background-color: #f8f9fa;
-    }
-    .container {
-      max-width: 700px;
-    }
-    .card {
-      border-radius: 1rem;
-      box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
-    }
-    .card-header {
-      background-color: #0d6efd;
-      color: white;
-      border-top-left-radius: 1rem;
-      border-top-right-radius: 1rem;
-    }
-  </style>
-</head>
-<body>
-  <div class="container py-5">
-    <div class="card">
-      <div class="card-header text-center">
-        <h4 class="mb-0">📑 Generación de Reportes</h4>
-      </div>
-      <div class="card-body p-4">
-
-        <form id="form-reportes" method="get" action="{% url 'admin_dashboard:descargar_reporte' %}">
-          <!-- Tipo de reporte -->
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Tipo de reporte</label>
-            <select name="tipo" id="tipo_reporte" class="form-select" required>
-              <option value="general" selected>General del sistema</option>
-              <option value="usuario">Por usuario</option>
-            </select>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generación de Reportes - TwoMove 🚲</title>
+    <link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}" />
+    <link rel="stylesheet" href="{% static 'admin/css/reportes_panel.css' %}" />
+  </head>
+  <body>
+    <!-- HEADER -->
+    <header class="dashboard-header">
+      <div class="header-container">
+        <div class="logo-section">
+          <div class="logo-icon">
+            <img
+              src="{% static 'users/images/logo.png' %}"
+              alt="TwoMove Logo"
+            />
           </div>
-
-          <!-- Selección de usuario -->
-          <div class="mb-3" id="wrap_usuario" style="display:none;">
-            <label class="form-label fw-semibold">Seleccionar usuario</label>
-            <select name="usuario_id" id="usuario_id" class="form-select" required>
-              <option value="">-- Selecciona un usuario --</option>
-              {% for u in usuarios %}
-                <option value="{{ u.usuario_id }}">{{ u.email }}</option>
-              {% empty %}
-                <option disabled>No hay usuarios registrados</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <!-- Formato -->
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Formato</label>
-            <select name="formato" class="form-select" required>
-              <option value="pdf" selected>📄 PDF</option>
-              <option value="csv">🧾 CSV</option>
-            </select>
-          </div>
-
-          <button type="submit" class="btn btn-primary w-100">
-            📥 Generar Reporte
-          </button>
-        </form>
-
-        <div class="mt-4 text-center">
-          <a href="{% url 'admin_dashboard:dashboard_home' %}" class="btn btn-secondary">
-            ⬅️ Volver al Dashboard
-          </a>
         </div>
 
+        <div class="user-section">
+          <div class="user-info">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>{{ request.user.email }}</span>
+          </div>
+          <a href="{% url 'admin_dashboard:admin_logout' %}" class="logout-btn">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Cerrar sesión
+          </a>
+        </div>
       </div>
-    </div>
-  </div>
+    </header>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const tipo = document.getElementById("tipo_reporte");
-      const wrapUsuario = document.getElementById("wrap_usuario");
-      const selUsuario = document.getElementById("usuario_id");
-      const form = document.getElementById("form-reportes");
+    <!-- MAIN CONTENT -->
+    <main class="dashboard-main">
+      <div class="dashboard-container">
+        <!-- Breadcrumb y título -->
+        <div class="page-header">
+          <div class="breadcrumb">
+            <a href="{% url 'admin_dashboard:dashboard_home' %}">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              </svg>
+              Inicio
+            </a>
+            <span>/</span>
+            <span>Generación de Reportes</span>
+          </div>
+          <h2>📊 Generación de Reportes</h2>
+          <p class="subtitle">
+            Crea y descarga reportes del sistema en diferentes formatos
+          </p>
+        </div>
 
-      // Alternar visibilidad del selector de usuario
-      function toggleUsuario() {
-        const esUsuario = tipo.value === "usuario";
-        wrapUsuario.style.display = esUsuario ? "block" : "none";
-        // Solo requerir usuario cuando sea reporte por usuario
-        selUsuario.required = esUsuario;
-      }
+        <!-- Mensajes -->
+        <div class="messages-container">
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">
+            <span class="alert-icon"
+              >{{ message.tags|default:"info"|slice:":1" }}</span
+            >
+            <span>{{ message }}</span>
+            <button class="alert-close" onclick="this.parentElement.remove()">
+              ×
+            </button>
+          </div>
+          {% endfor %}
+        </div>
 
-      tipo.addEventListener("change", toggleUsuario);
+        <!-- Formulario de reportes -->
+        <div class="report-form-container">
+          <div class="form-header">
+            <h3>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                ></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              Configurar Reporte
+            </h3>
+            <p>Selecciona el tipo de reporte y formato de descarga</p>
+          </div>
 
-      form.addEventListener("submit", function(e) {
-        const esUsuario = tipo.value === "usuario";
-        const seleccionado = selUsuario.value.trim();
-        if (esUsuario && !seleccionado) {
-          e.preventDefault();
-          alert("⚠️ Por favor selecciona un usuario antes de continuar.");
-          selUsuario.focus();
-        }
-      });
+          <form
+            id="form-reportes"
+            method="get"
+            action="{% url 'admin_dashboard:descargar_reporte' %}"
+          >
+            <div class="form-grid">
+              <!-- Tipo de reporte -->
+              <div class="form-field">
+                <label for="tipo_reporte">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  Tipo de Reporte
+                </label>
+                <select name="tipo" id="tipo_reporte" required>
+                  <option value="general" selected>General del sistema</option>
+                  <option value="usuario">Por usuario específico</option>
+                </select>
+              </div>
 
-      // Ejecutar una vez al cargar
-      toggleUsuario();
-    });
-  </script>
-</body>
+              <!-- Formato -->
+              <div class="form-field">
+                <label for="formato">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"
+                    ></path>
+                    <polyline points="13 2 13 9 20 9"></polyline>
+                  </svg>
+                  Formato
+                </label>
+                <select name="formato" id="formato" required>
+                  <option value="pdf" selected>📄 PDF</option>
+                  <option value="csv">🧾 CSV</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Selección de usuario (oculto por defecto) -->
+            <div
+              class="form-field full-width"
+              id="wrap_usuario"
+              style="display: none"
+            >
+              <label for="usuario_id">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                Seleccionar Usuario
+              </label>
+              <select name="usuario_id" id="usuario_id">
+                <option value="">-- Selecciona un usuario --</option>
+                {% for u in usuarios %}
+                <option value="{{ u.usuario_id }}">
+                  {{ u.email }} - {{ u.nombre }} {{ u.apellido }}
+                </option>
+                {% empty %}
+                <option disabled>No hay usuarios registrados</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Información adicional -->
+            <div class="info-box">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <div class="info-content">
+                <strong>Información:</strong>
+                <ul>
+                  <li>
+                    <strong>Reporte General:</strong> Incluye estadísticas
+                    completas del sistema (usuarios, bicicletas, viajes,
+                    estaciones).
+                  </li>
+                  <li>
+                    <strong>Reporte por Usuario:</strong> Detalla el historial y
+                    actividad de un usuario específico.
+                  </li>
+                  <li>
+                    <strong>Formato PDF:</strong> Documento formateado ideal
+                    para impresión.
+                  </li>
+                  <li>
+                    <strong>Formato CSV:</strong> Datos tabulares para análisis
+                    en Excel o similar.
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button
+                type="button"
+                class="btn-reset"
+                onclick="document.getElementById('form-reportes').reset(); toggleUsuario();"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="1 4 1 10 7 10"></polyline>
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+                Limpiar
+              </button>
+              <button type="submit" class="btn-submit">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Generar Reporte
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Tipos de reportes disponibles -->
+        <div class="reports-info-section">
+          <div class="section-header">
+            <h3>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              Tipos de Reportes Disponibles
+            </h3>
+          </div>
+
+          <div class="reports-grid">
+            <div class="report-card">
+              <div class="report-icon blue">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M3 3h18v18H3z"></path>
+                  <path d="M3 9h18"></path>
+                  <path d="M9 21V9"></path>
+                </svg>
+              </div>
+              <div class="report-content">
+                <h4>Reporte General</h4>
+                <p>
+                  Resumen completo del sistema con todas las métricas
+                  principales y estadísticas globales.
+                </p>
+                <ul>
+                  <li>Total de usuarios registrados</li>
+                  <li>Estado de bicicletas</li>
+                  <li>Viajes realizados</li>
+                  <li>Estaciones activas</li>
+                  <li>Balance de wallets</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="report-card">
+              <div class="report-icon green">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+              <div class="report-content">
+                <h4>Reporte por Usuario</h4>
+                <p>
+                  Información detallada de un usuario específico incluyendo su
+                  actividad e historial.
+                </p>
+                <ul>
+                  <li>Datos personales del usuario</li>
+                  <li>Historial de viajes</li>
+                  <li>Balance de wallet</li>
+                  <li>Sanciones (si aplica)</li>
+                  <li>Estadísticas de uso</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón volver -->
+        <div class="back-button-container">
+          <a href="{% url 'admin_dashboard:dashboard_home' %}" class="btn-back">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            Volver al Dashboard
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="dashboard-footer">
+      <p>TwoMove © {% now "Y" %} — Panel administrativo interno</p>
+    </footer>
+
+    <script src="{% static 'admin/js/reportes_panel.js' %}"></script>
+  </body>
 </html>

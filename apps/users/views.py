@@ -12,6 +12,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.db.models import Sum
 
 from .forms import RegistroForm, VerificacionForm
 from .models import Usuario, CambioCredenciales
@@ -33,25 +34,51 @@ def dashboard_view(request):
 
     # 🚴 Viajes del mes actual
     hoy = timezone.now()
-    inicio_mes = hoy.replace(day=1)
-    viajes_mes = Rental.objects.filter(usuario=user, hora_inicio__gte=inicio_mes).count()
+    inicio_mes = hoy.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    viajes_mes = Rental.objects.filter(
+        usuario=user, 
+        hora_inicio__gte=inicio_mes,
+        estado="finalizado"  # Solo contar viajes completados
+    ).count()
 
     # ⏱️ Calcular tiempo total de viajes completados
-    rentals = Rental.objects.filter(usuario=user, hora_fin__isnull=False)
-    tiempo_total = timedelta()
-    for viaje in rentals:
-        tiempo_total += (viaje.hora_fin - viaje.hora_inicio)
-    horas, resto = divmod(tiempo_total.total_seconds(), 3600)
-    minutos = int(resto // 60)
-    tiempo_total_str = f"{int(horas)}h {minutos}min"
+    # Opción 1: Usando duracion_minutos (RECOMENDADO)
+    tiempo_total_minutos = Rental.objects.filter(
+        usuario=user,
+        estado="finalizado",
+        duracion_minutos__isnull=False
+    ).aggregate(total=Sum('duracion_minutos'))['total'] or 0
+    
+    horas = tiempo_total_minutos // 60
+    minutos = tiempo_total_minutos % 60
+    tiempo_total_str = f"{int(horas)}h {int(minutos)}min"
+    
+    # Opción 2: Calculando manualmente (ALTERNATIVA si prefieres)
+    # rentals = Rental.objects.filter(
+    #     usuario=user,
+    #     hora_fin__isnull=False,
+    #     hora_inicio__isnull=False  # 👈 IMPORTANTE: Validar que ambos existan
+    # )
+    # tiempo_total = timedelta()
+    # for viaje in rentals:
+    #     if viaje.hora_fin and viaje.hora_inicio:  # 👈 Doble validación
+    #         tiempo_total += (viaje.hora_fin - viaje.hora_inicio)
+    # horas, resto = divmod(tiempo_total.total_seconds(), 3600)
+    # minutos = int(resto // 60)
+    # tiempo_total_str = f"{int(horas)}h {minutos}min"
 
-    # ⭐ Nivel según cantidad de viajes
-    if viajes_mes > 20:
-        nivel = "Experto"
-    elif viajes_mes > 10:
+    # ⭐ Nivel según cantidad de viajes totales (no solo del mes)
+    total_viajes = Rental.objects.filter(usuario=user, estado="finalizado").count()
+    if total_viajes == 0:
+        nivel = "Nuevo"
+    elif total_viajes < 5:
+        nivel = "Principiante"
+    elif total_viajes < 20:
+        nivel = "Intermedio"
+    elif total_viajes < 50:
         nivel = "Avanzado"
     else:
-        nivel = "Principiante"
+        nivel = "Experto"
 
     # 💳 Últimos pagos (si tienes modelo Payment)
     pagos = MetodoTarjeta.objects.filter(usuario=user).order_by('-creado_en')[:5]
@@ -71,6 +98,7 @@ def dashboard_view(request):
     }
 
     return render(request, "users/dashboard.html", contexto)
+
 def registro_view(request):
     if request.method == 'POST':
         form = RegistroForm(request.POST)

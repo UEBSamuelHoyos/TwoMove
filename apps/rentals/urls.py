@@ -22,7 +22,8 @@ urlpatterns = [
     path('test/cancel_reservation/', views.CancelReservationTestView.as_view(), name='cancel_reservation_test'),
     path('reservation/<int:rental_id>/cancel/', views.cancel_reservation_view, name='cancel_reservation'),
     path('test/start_trip/', views.StartTripTestView.as_view(), name='start_trip_test'),
-    path('test/trip-end/', views.TripEndPageView.as_view(), name='trip_end_page'),   # 👈 HTML para finalizar viaje
+    path('test/trip-end/', views.TripEndPageView.as_view(), name='trip_end_page'),
+    path('test/trip-history/', views.trip_history_view, name='trip_history'),    
 
     # ---------------------------------------------------
     # ⚙️ Endpoint API HTML (TripEnd desde formulario)

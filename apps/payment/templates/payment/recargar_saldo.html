@@ -1,38 +1,253 @@
-{% extends "base.html" %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recargar Saldo - TwoMove</title>
+    <link
+      rel="stylesheet"
+      href="{% static 'payments/css/recargar_saldo.css' %}"
+    />
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">
+          <img
+            src="{% static 'users/images/logo.png' %}"
+            alt="TwoMove"
+            onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:45px;height:45px;background:#2cb5a0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:1.5rem;font-weight:600;\'>T</div>'"
+          />
+        </div>
+        <button class="close-sidebar" id="closeSidebar">✕</button>
+      </div>
 
-{% block content %}
-<h2>Recargar Saldo</h2>
+      <nav class="sidebar-nav">
+        <a href="{% url 'users:dashboard' %}" class="nav-item">
+          <span class="icon">🏠</span>
+          <span>Inicio</span>
+        </a>
+        <a href="{% url 'menu_pagos' %}" class="nav-item">
+          <span class="icon">💳</span>
+          <span>Saldo y Recargas</span>
+        </a>
+        <a href="{% url 'rentals:start_trip_test' %}" class="nav-item">
+          <span class="icon">🚴</span>
+          <span>Mis Viajes</span>
+        </a>
+        <a href="{% url 'rentals:reservation_test' %}" class="nav-item">
+          <span class="icon">📅</span>
+          <span>Reservar</span>
+        </a>
+        <a href="{% url 'rentals:trip_history' %}" class="nav-item">
+          <span class="icon">📊</span>
+          <span>Historial</span>
+        </a>
+      </nav>
 
-<form method="POST" action="{% url 'recargar_saldo' %}">
-    {% csrf_token %}
+      <div class="sidebar-footer">
+        <a href="{% url 'users:logout' %}" class="logout-btn">
+          <span class="icon">🚪</span>
+          <span>Cerrar Sesión</span>
+        </a>
+      </div>
+    </aside>
 
-    <label for="amount">Monto a recargar (COP):</label>
-    <input type="number" step="1000" min="1000" name="amount" id="amount" required>
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="dashboard-header">
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <div class="header-right">
+          <div class="user-info">
+            <span class="user-name">{{ user.nombre|default:"Usuario" }}</span>
+          </div>
+        </div>
+      </header>
 
-    <label for="payment_method_id">Selecciona tu tarjeta:</label>
-    <select name="payment_method_id" id="payment_method_id" required>
-        {% for tarjeta in tarjetas %}
-            <option value="{{ tarjeta.stripe_payment_method_id }}">
-                {{ tarjeta.brand|title }} ****{{ tarjeta.last4 }} (Vence: {{ tarjeta.exp_month }}/{{ tarjeta.exp_year }})
-            </option>
-        {% empty %}
-            <option disabled selected>No tienes tarjetas registradas</option>
-        {% endfor %}
-    </select>
+      <!-- Content -->
+      <div class="content-wrapper">
+        <div class="recharge-container">
+          <!-- Header Section -->
+          <div class="recharge-header">
+            <div class="header-icon">💰</div>
+            <h1>Recargar Saldo</h1>
+            <p class="subtitle">Agrega dinero a tu cuenta TwoMove</p>
+          </div>
 
-    <br><br>
-    <button type="submit" {% if not tarjetas %}disabled{% endif %}>Recargar ahora</button>
-</form>
+          <!-- Mensajes -->
+          {% if mensaje %}
+          <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <span>{{ mensaje }}</span>
+          </div>
+          {% endif %} {% if error %}
+          <div class="alert alert-error">
+            <span class="alert-icon">❌</span>
+            <span>{{ error }}</span>
+          </div>
+          {% endif %}
 
-{% if mensaje %}
-    <div style="background-color: #d4edda; color: #155724; padding: 10px; margin-top: 20px;">
-        ✅ {{ mensaje }}
-    </div>
-{% endif %}
+          <div class="balance-card">
+            <div class="balance-label">Saldo Actual</div>
+            <div class="balance-amount" id="balance-cop">
+              ${{ user.wallet.balance|default:"0" }} COP
+            </div>
+            <div class="balance-usd" id="balance-usd">≈ $0.00 USD</div>
+          </div>
+          <!-- Recharge Form -->
+          <form
+            method="POST"
+            action="{% url 'recargar_saldo' %}"
+            id="recharge-form"
+            class="recharge-form"
+          >
+            {% csrf_token %}
 
-{% if error %}
-    <div style="background-color: #f8d7da; color: #721c24; padding: 10px; margin-top: 20px;">
-        ❌ {{ error }}
-    </div>
-{% endif %}
-{% endblock %}
+            <!-- Amount Selection -->
+            <div class="form-section">
+              <label class="form-label">Selecciona el monto a recargar</label>
+
+              <!-- Quick amounts -->
+              <div class="amount-grid">
+                <button type="button" class="amount-btn" data-amount="10000">
+                  <span class="amount-value">$10,000</span>
+                  <span class="amount-usd">≈ $2.50 USD</span>
+                </button>
+                <button type="button" class="amount-btn" data-amount="20000">
+                  <span class="amount-value">$20,000</span>
+                  <span class="amount-usd">≈ $5.00 USD</span>
+                </button>
+                <button type="button" class="amount-btn" data-amount="50000">
+                  <span class="amount-value">$50,000</span>
+                  <span class="amount-usd">≈ $12.50 USD</span>
+                </button>
+                <button type="button" class="amount-btn" data-amount="100000">
+                  <span class="amount-value">$100,000</span>
+                  <span class="amount-usd">≈ $25.00 USD</span>
+                </button>
+              </div>
+
+              <!-- Custom amount -->
+              <div class="custom-amount">
+                <label for="amount" class="form-label-small"
+                  >O ingresa un monto personalizado</label
+                >
+                <input
+                  type="number"
+                  step="1000"
+                  min="1000"
+                  name="amount"
+                  id="amount"
+                  placeholder="10000"
+                  required
+                />
+                <div class="amount-preview" id="amount-preview">
+                  <span class="preview-cop">$0 COP</span>
+                  <span class="preview-separator">≈</span>
+                  <span class="preview-usd">$0.00 USD</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Selection -->
+            <div class="form-section">
+              <label for="payment_method_id" class="form-label">
+                <span class="icon">💳</span>
+                Selecciona tu tarjeta
+              </label>
+
+              {% if tarjetas %}
+              <div class="cards-list">
+                {% for tarjeta in tarjetas %}
+                <label class="card-option">
+                  <input
+                    type="radio"
+                    name="payment_method_id"
+                    value="{{ tarjeta.stripe_payment_method_id }}"
+                    required
+                    {%
+                    if
+                    forloop.first
+                    %}checked{%
+                    endif
+                    %}
+                  />
+                  <div class="card-option-content">
+                    <div class="card-brand">
+                      {% if tarjeta.brand == 'visa' %}
+                      <span class="brand-icon">💳</span>
+                      {% elif tarjeta.brand == 'mastercard' %}
+                      <span class="brand-icon">💳</span>
+                      {% else %}
+                      <span class="brand-icon">💳</span>
+                      {% endif %}
+                      <span class="brand-name">{{ tarjeta.brand|title }}</span>
+                    </div>
+                    <div class="card-number">•••• {{ tarjeta.last4 }}</div>
+                    <div class="card-expiry">
+                      Vence: {{ tarjeta.exp_month }}/{{ tarjeta.exp_year }}
+                    </div>
+                  </div>
+                  <span class="checkmark">✓</span>
+                </label>
+                {% endfor %}
+              </div>
+              {% else %}
+              <div class="no-cards">
+                <div class="no-cards-icon">💳</div>
+                <p>No tienes tarjetas registradas</p>
+                <a href="{% url 'agregar_tarjeta' %}" class="btn-add-card">
+                  <span>+</span>
+                  Agregar tarjeta
+                </a>
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              class="btn-primary"
+              id="btn-recharge"
+              {%
+              if
+              not
+              tarjetas
+              %}disabled{%
+              endif
+              %}
+            >
+              <span class="btn-icon">⚡</span>
+              <span>Recargar Ahora</span>
+            </button>
+          </form>
+
+          <!-- Back Link -->
+          <div class="back-link">
+            <a href="{% url 'menu_pagos' %}" class="btn-back">
+              <span>←</span>
+              <span>Volver al menú de pagos</span>
+            </a>
+          </div>
+
+          <!-- Security Info -->
+          <div class="security-info">
+            <div class="security-icon">🔒</div>
+            <div class="security-text">
+              <strong>Transacción segura</strong>
+              <p>Tu pago será procesado de forma segura mediante Stripe</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script>
+      // Pasar el saldo desde Django al JavaScript
+      window.walletBalance = {{user.wallet.balance|default:"0" }};
+    </script>
+    <script src="{% static 'payments/js/recargar_saldo.js' %}"></script>
+  </body>
+</html>

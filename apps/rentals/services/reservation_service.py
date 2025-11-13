@@ -159,15 +159,16 @@ class ReservationService:
 
             # Contexto para el template
             ctx = {
-                "usuario": usuario,
-                "rental": rental,
-                "codigo": rental.codigo_desbloqueo,
-                "estacion_origen": getattr(rental.estacion_origen, "nombre", ""),
-                "estacion_destino": getattr(rental.estacion_destino, "nombre", ""),  # 👈 NUEVO
-                "bicicleta": rental.bike_serial_reservada or "",
-                "tipo_viaje": rental.tipo_viaje,
-                "metodo_pago": rental.metodo_pago,
-            }
+    "usuario": usuario,
+    "rental": rental,
+    "codigo": rental.codigo_desbloqueo,
+    "estacion_origen": getattr(rental.estacion_origen, "nombre", "N/A"),  # Por si acaso
+            "estacion_destino": getattr(rental.estacion_destino, "nombre", "N/A") if rental.estacion_destino else "N/A",
+            "bicicleta": rental.bike_serial_reservada or "Por asignar",
+    "tipo_viaje": rental.tipo_viaje,
+    "metodo_pago": rental.metodo_pago,
+    "now": rental.creado_en,  # 👈 AGREGAR: para el footer del email
+}
 
             html_content = render_to_string("rentals/reservation_confirmed.html", ctx)
 
@@ -175,9 +176,9 @@ class ReservationService:
             text_content = (
                 f"Hola {getattr(usuario, 'nombre', usuario.email)}.\n\n"
                 f"Tu reserva ha sido confirmada.\n"
-                f"Origen: {ctx['estacion_origen']}\n"
-                f"Destino: {ctx['estacion_destino']}\n"
-                f"Bicicleta: {ctx['bicicleta']}\n"
+                 f"Origen: {ctx['estacion_origen']}\n"
+            f"Destino: {ctx['estacion_destino']}\n"
+            f"Bicicleta: {ctx['bicicleta']}\n"
                 f"Código de desbloqueo: {ctx['codigo']}\n"
                 f"Método de pago: {ctx['metodo_pago']}\n"
                 "¡Buen viaje!"

@@ -1,179 +1,140 @@
-// TwoMove Dashboard JavaScript
+console.log('1. Archivo dashboard.js cargado');
+
+// Configuración de la API
+const API_BASE = '/alquileres/api/rentals';
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Dashboard cargado correctamente');
+    console.log('2. DOM cargado');
     
-    initNavigation();
+    // Inicializar sidebar móvil
     initMobileSidebar();
-    initTripTimer();
-    initAmountButtons();
+    
+    // Inicializar scroll header
+    initScrollHeader();
+    
+    // Convertir saldo a USD
+    convertirSaldoUSD();
+    
+    // Cargar estadísticas del usuario
+    cargarEstadisticas();
 });
 
-// --- Navegación entre secciones ---
-function initNavigation() {
-    const navItems = document.querySelectorAll('.nav-item');
-    const sections = document.querySelectorAll('.content-section');
+// ==================== CARGAR ESTADÍSTICAS ====================
+async function cargarEstadisticas() {
+    console.log('3. Cargando estadísticas del usuario...');
     
-    navItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            navItems.forEach(nav => nav.classList.remove('active'));
-            sections.forEach(section => section.classList.remove('active'));
-            
-            this.classList.add('active');
-            
-            const sectionId = this.getAttribute('data-section');
-            const targetSection = document.getElementById(sectionId);
-            if (targetSection) {
-                targetSection.classList.add('active');
-            }
-            
-            if (window.innerWidth <= 768) {
-                document.getElementById('sidebar').classList.remove('active');
-            }
-            
-            window.scrollTo(0, 0);
+    try {
+        const response = await fetch(`${API_BASE}/estadisticas/`, {
+            credentials: 'include'
         });
-    });
+        
+        if (!response.ok) {
+            throw new Error(`Error HTTP ${response.status}`);
+        }
+        
+        const stats = await response.json();
+        console.log('4. Estadísticas obtenidas:', stats);
+        
+        // Actualizar el DOM con las estadísticas
+        actualizarEstadisticas(stats);
+        
+    } catch (error) {
+        console.error('Error al cargar estadísticas:', error);
+        // Mantener valores por defecto si hay error
+    }
 }
 
-// --- Navegación programática ---
-function navigateTo(sectionId) {
-    const targetNav = document.querySelector(`[data-section="${sectionId}"]`);
-    if (targetNav) targetNav.click();
+// ==================== ACTUALIZAR ESTADÍSTICAS EN EL DOM ====================
+function actualizarEstadisticas(stats) {
+    // Actualizar viajes del mes
+    const viajesMesElements = document.querySelectorAll('.stat-value');
+    if (viajesMesElements[1]) {
+        viajesMesElements[1].textContent = stats.viajes_mes || '0';
+    }
+    
+    // Actualizar tiempo total
+    if (viajesMesElements[2]) {
+        viajesMesElements[2].textContent = stats.tiempo_total || '0h 0min';
+    }
+    
+    // Actualizar nivel
+    if (viajesMesElements[3]) {
+        viajesMesElements[3].textContent = stats.nivel || 'Nuevo';
+    }
+    
+    console.log('5. Estadísticas actualizadas en el dashboard');
 }
 
-// --- Sidebar móvil ---
+// ==================== CONVERTIR SALDO A USD ====================
+function convertirSaldoUSD() {
+    const balanceCopElement = document.getElementById('balance-cop');
+    const balanceUsdElement = document.getElementById('balance-usd');
+    
+    if (balanceCopElement && balanceUsdElement) {
+        const balanceText = balanceCopElement.textContent;
+        const balanceCOP = parseFloat(balanceText.replace(/[^0-9]/g, ''));
+        
+        if (balanceCOP > 0) {
+            const balanceUSD = (balanceCOP * 0.00025).toFixed(2);
+            balanceUsdElement.textContent = `≈ $${balanceUSD} USD`;
+        }
+    }
+}
+
+// ==================== SIDEBAR MÓVIL ====================
 function initMobileSidebar() {
     const menuToggle = document.getElementById('menuToggle');
     const closeSidebar = document.getElementById('closeSidebar');
     const sidebar = document.getElementById('sidebar');
     
-    if (menuToggle && sidebar) {
+    if (menuToggle) {
         menuToggle.addEventListener('click', function(e) {
-            e.stopPropagation(); // evita cierre inmediato
-            sidebar.classList.toggle('active');
+            e.stopPropagation();
+            sidebar.classList.add('active');
         });
     }
     
     if (closeSidebar) {
-        closeSidebar.addEventListener('click', function() {
+        closeSidebar.addEventListener('click', function(e) {
+            e.stopPropagation();
             sidebar.classList.remove('active');
         });
     }
     
     document.addEventListener('click', function(e) {
-        if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+        if (window.innerWidth <= 768) {
+            const isLinkClick = e.target.closest('.sidebar-nav a, .logout-btn');
+            if (isLinkClick) return;
             if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
                 sidebar.classList.remove('active');
             }
         }
     });
-}
-
-// --- Timer del viaje activo ---
-function initTripTimer() {
-    const timerElement = document.getElementById('tripTimer');
-    if (timerElement) {
-        let seconds = 0;
-        let minutes = 45;
-        let hours = 0;
-        
-        setInterval(function() {
-            seconds++;
-            if (seconds >= 60) {
-                seconds = 0;
-                minutes++;
-            }
-            if (minutes >= 60) {
-                minutes = 0;
-                hours++;
-            }
-            
-            const formattedTime = 
-                String(hours).padStart(2, '0') + ':' +
-                String(minutes).padStart(2, '0') + ':' +
-                String(seconds).padStart(2, '0');
-            
-            timerElement.textContent = formattedTime;
-        }, 1000);
-    }
-}
-
-// --- Botones de montos de recarga ---
-function initAmountButtons() {
-    const amountButtons = document.querySelectorAll('.amount-btn');
     
-    amountButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const amount = this.getAttribute('data-amount');
-            rechargeBalance(amount);
+    document.querySelectorAll('.sidebar-nav a, .logout-btn').forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                setTimeout(() => sidebar.classList.remove('active'), 100);
+            }
         });
     });
 }
 
-// --- Función para recargar saldo ---
-function rechargeBalance(amount) {
-    console.log('Recargando saldo:', amount);
-    
-    if (confirm(`¿Confirmas la recarga de $${Number(amount).toLocaleString()}?`)) {
-        alert('Recarga exitosa! (Conectar con backend)');
-    }
-}
-
-// --- Recarga personalizada ---
-function rechargeCustom() {
-    const customAmount = document.getElementById('customAmount').value;
-    
-    if (!customAmount || customAmount <= 0) {
-        alert('Por favor ingresa un monto válido');
-        return;
-    }
-    rechargeBalance(customAmount);
-}
-
-// --- Iniciar viaje ---
-function startTrip() {
-    if (confirm('¿Deseas iniciar un nuevo viaje?')) {
-        alert('Iniciando viaje... (Conectar con backend)');
-    }
-}
-
-// --- Obtener CSRF de Django ---
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
+// ==================== SCROLL HEADER ====================
+function initScrollHeader() {
+    let lastScroll = 0;
+    window.addEventListener('scroll', function() {
+        const header = document.querySelector('.dashboard-header');
+        const currentScroll = window.pageYOffset;
+        
+        if (currentScroll > lastScroll && currentScroll > 80) {
+            header.style.transform = 'translateY(-100%)';
+        } else {
+            header.style.transform = 'translateY(0)';
         }
-    }
-    return cookieValue;
+        
+        lastScroll = currentScroll;
+    });
 }
 
-// --- Formularios ---
-const forms = document.querySelectorAll('form');
-forms.forEach(form => {
-    form.addEventListener('submit', function(e) {
-        console.log('Formulario enviado:', this.action);
-    });
-});
-
-// --- Smooth scroll UX ---
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        const href = this.getAttribute('href');
-        if (href !== '#') {
-            e.preventDefault();
-            const target = document.querySelector(href);
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-    });
-});
+console.log('6. Todas las funciones cargadas correctamente');

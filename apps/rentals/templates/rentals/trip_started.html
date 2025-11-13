@@ -1,21 +1,224 @@
 <!DOCTYPE html>
 <html lang="es">
-  <body style="font-family:Arial,sans-serif;color:#333;background-color:#f9f9f9;padding:20px;">
-    <div style="max-width:600px;margin:auto;background:white;border-radius:10px;padding:20px;box-shadow:0 0 10px rgba(0,0,0,0.1)">
-      <h2 style="color:#28a745;">🚲 {{ SITE_NAME }} – Tu viaje ha comenzado</h2>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Viaje Iniciado - TwoMove</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: linear-gradient(135deg, #f7fafc 0%, #e6f7ff 100%);
+        color: #2d3748;
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+        overflow: hidden;
+      }
+      .header {
+        text-align: center;
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        color: white;
+        padding: 35px 20px;
+        position: relative;
+      }
+      .header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(
+          circle at 30% 50%,
+          rgba(255, 255, 255, 0.15) 0%,
+          transparent 50%
+        );
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        letter-spacing: 0.5px;
+      }
+      .header-icon {
+        font-size: 50px;
+        margin-bottom: 10px;
+        display: block;
+      }
+      .content {
+        padding: 35px;
+      }
+      .content p {
+        margin: 0 0 16px 0;
+        color: #4a5568;
+        font-size: 15px;
+      }
+      .greeting {
+        font-size: 16px;
+        color: #1a202c;
+        margin-bottom: 20px;
+      }
+      .highlight {
+        color: #38a169;
+        font-weight: 700;
+      }
+      .card {
+        background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 25px 0;
+        border: 2px solid #48bb78;
+        box-shadow: 0 4px 12px rgba(72, 187, 120, 0.15);
+      }
+      .card p {
+        margin: 12px 0;
+        color: #2d3748;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .card p strong {
+        color: #22543d;
+        min-width: 180px;
+        font-weight: 600;
+      }
+      .footer {
+        text-align: center;
+        font-size: 14px;
+        color: #718096;
+        margin-top: 30px;
+        padding-top: 25px;
+        border-top: 2px solid #e2e8f0;
+      }
+      .footer p {
+        margin: 8px 0;
+      }
+      .footer strong {
+        color: #38a169;
+        font-weight: 700;
+      }
+      .btn {
+        display: inline-block;
+        margin-top: 20px;
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        color: #fff !important;
+        text-decoration: none;
+        padding: 14px 28px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 15px;
+        box-shadow: 0 6px 20px rgba(72, 187, 120, 0.3);
+        transition: all 0.2s ease;
+        text-align: center;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(72, 187, 120, 0.4);
+      }
+      .info-message {
+        background: linear-gradient(135deg, #e6f7ff 0%, #91d5ff 100%);
+        border-left: 4px solid #1890ff;
+        padding: 15px 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+        color: #003a8c;
+      }
+      .info-message p {
+        margin: 0;
+        color: #003a8c;
+      }
+      .divider {
+        height: 2px;
+        background: linear-gradient(
+          to right,
+          transparent,
+          #e2e8f0,
+          transparent
+        );
+        margin: 25px 0;
+      }
+      .emoji {
+        font-size: 20px;
+        margin-right: 5px;
+      }
+      .success-badge {
+        display: inline-block;
+        background: #c6f6d5;
+        color: #22543d;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 15px;
+      }
+    </style>
+  </head>
 
-      <p>Hola {{ usuario.nombre|default:usuario.email }},</p>
-      <p>Tu viaje ha sido iniciado correctamente. A continuación los detalles:</p>
+  <body>
+    <div class="container">
+      <div class="header">
+        <span class="header-icon">🚴‍♂️</span>
+        <h1>¡Tu Viaje ha Comenzado!</h1>
+      </div>
 
-      <ul style="line-height:1.6;">
-        <li><b>Hora de inicio:</b> {{ hora_inicio }}</li>
-        <li><b>Bicicleta:</b> {{ bicicleta }}</li>
-        <li><b>Estación origen:</b> {{ estacion }}</li>
-      </ul>
+      <div class="content">
+        <p class="greeting">
+          Hola <strong>{{ usuario.nombre|default:usuario.email }}</strong>,
+        </p>
+        <p>
+          <span class="success-badge">✅ En curso</span><br />
+          Tu viaje ha sido iniciado correctamente. A continuación encontrarás
+          los detalles de tu recorrido:
+        </p>
 
-      <p>¡Disfruta tu recorrido con {{ SITE_NAME }}! 🚴‍♂️</p>
-      <hr>
-      <p style="font-size:13px;color:#777;">Gracias por usar {{ SITE_NAME }} – Sistema de Movilidad Urbana</p>
+        <div class="card">
+          <p>
+            <strong><span class="emoji">🕓</span> Hora de inicio:</strong>
+            {{ hora_inicio }}
+          </p>
+          <p>
+            <strong><span class="emoji">🚲</span> Bicicleta:</strong>
+            {{ bicicleta }}
+          </p>
+          <p>
+            <strong><span class="emoji">📍</span> Estación de origen:</strong>
+            {{ estacion }}
+          </p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="info-message">
+          <p>
+            💡 <strong>Consejo:</strong> Recuerda devolver la bicicleta en
+            cualquier estación {{ SITE_NAME }} disponible al finalizar tu
+            recorrido. ¡Disfruta el viaje!
+          </p>
+        </div>
+
+        <div style="text-align: center">
+          <a href="https://twomove.co" class="btn">🚴 Ver estado del viaje</a>
+        </div>
+
+        <div class="footer">
+          <p>Gracias por usar <strong>{{ SITE_NAME }}</strong> 🚴‍♂️</p>
+          <p style="font-size: 12px; color: #a0aec0; margin-top: 15px">
+            © {{ now|date:"Y" }} {{ SITE_NAME }} — Sistema de Movilidad Urbana
+          </p>
+        </div>
+      </div>
     </div>
   </body>
 </html>

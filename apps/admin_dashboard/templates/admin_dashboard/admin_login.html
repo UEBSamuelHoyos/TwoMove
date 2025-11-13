@@ -1,96 +1,137 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>TwoMove | Panel Administrativo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel Administrativo - TwoMove 🚲</title>
+    <link rel="stylesheet" href="{% static 'admin/css/admin_login.css' %}" />
+  </head>
+  <body>
+    <header class="header">
+      <nav class="nav-container">
+        <a href="{% url 'home' %}" class="logo">
+          <div class="logo-icon">
+            <img
+              src="{% static 'users/images/logo.png' %}"
+              alt="TwoMove Logo"
+              onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:45px;height:45px;background:#2cb5a0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:1.5rem;font-weight:600;\'>T</div>'"
+            />
+          </div>
+        </a>
 
-  <style>
-    body {
-      background: linear-gradient(135deg, #0d6efd 0%, #2b2b2b 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: "Poppins", sans-serif;
-    }
-    .login-card {
-      width: 380px;
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.25);
-      padding: 2rem;
-      animation: fadeIn 0.4s ease-in;
-    }
-    .login-card h4 {
-      font-weight: 600;
-      color: #0d6efd;
-      text-align: center;
-    }
-    .btn-primary {
-      background-color: #0d6efd;
-      border: none;
-    }
-    .btn-primary:hover {
-      background-color: #0048c2;
-    }
-    .form-control {
-      border-radius: 8px;
-    }
-    .alert {
-      border-radius: 8px;
-      font-size: 0.9rem;
-      padding: 0.5rem;
-    }
-    .footer-text {
-      color: #aaa;
-      font-size: 12px;
-      text-align: center;
-      margin-top: 15px;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
-</head>
+        <div class="welcome-text">
+          Panel Administrativo
+          <span>Acceso exclusivo para administradores</span>
+        </div>
+      </nav>
+    </header>
 
-<body>
-  <div class="login-card">
-    <div class="text-center mb-3">
-      <img src="{% static 'images/twomove_logo.png' %}" alt="TwoMove" width="90" class="mb-2">
-      <h4>Panel Administrativo</h4>
-      <p class="text-muted mb-4">Inicia sesión para continuar</p>
-    </div>
+    <main class="login-container">
+      <div class="login-card">
+        <div class="login-icon admin">
+          <svg
+            width="45"
+            height="45"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
+          </svg>
+        </div>
 
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} text-center">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
+        <h1>Panel Administrativo</h1>
+        <p class="subtitle">Ingresa tus credenciales de administrador</p>
 
-    <form method="POST">
-      {% csrf_token %}
-      <div class="mb-3">
-        <label for="email" class="form-label">Correo electrónico</label>
-        <input type="text" id="email" name="email" class="form-control" placeholder="admin@twomove.com" required>
+        {% if messages %}
+        <div class="messages-container">
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">
+            <span class="alert-icon">
+              {% if message.tags == 'success' %}✓{% elif message.tags == 'error'
+              %}✕{% else %}ℹ{% endif %}
+            </span>
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="POST" id="adminLoginForm">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="email">Correo electrónico</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="admin@twomove.com"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Contraseña</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn-submit">
+            <span class="btn-icon">🔐</span>
+            Iniciar sesión
+          </button>
+        </form>
+
+        <div class="admin-info">
+          <p class="info-text">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            Este panel es de acceso restringido
+          </p>
+        </div>
+
+        <div class="footer-admin">
+          <p>TwoMove © {% now "Y" %}</p>
+          <p class="footer-subtitle">Sistema de control interno</p>
+        </div>
       </div>
 
-      <div class="mb-3">
-        <label for="password" class="form-label">Contraseña</label>
-        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+      <div class="back-link">
+        <a href="{% url 'home' %}">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          Volver al inicio
+        </a>
       </div>
+    </main>
 
-      <button type="submit" class="btn btn-primary w-100 mt-2">Iniciar sesión</button>
-    </form>
-
-    <div class="footer-text">
-      <p class="mt-3 mb-0">TwoMove © {{ now|date:"Y" }}<br>Panel de control interno</p>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    <script src="{% static 'admin/js/admin_login.js' %}"></script>
+  </body>
 </html>

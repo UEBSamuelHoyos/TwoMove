@@ -283,7 +283,42 @@ nav {
 .back-link a:hover {
     color: #22543d;
 }
+.admin-access {
+  margin-top: 1.5rem;
+  padding: 3rem;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 10px;
+  border-left: 6px solid #3b82f6;
 
+}
+
+.admin-access p {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #1e40af;
+  font-size: 0.9rem;
+  margin: 0;
+  font-weight: 500;
+}
+
+.admin-access svg {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.admin-access a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.admin-access a:hover {
+  color: #1e40af;
+  text-decoration: underline;
+}
 
 /* ===========================
    📱 RESPONSIVO
@@ -298,6 +333,10 @@ nav {
     .btn-submit {
         font-size: 0.95rem;
     }
+    .admin-access p {
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
 }
 
 @media (max-width: 768px) {

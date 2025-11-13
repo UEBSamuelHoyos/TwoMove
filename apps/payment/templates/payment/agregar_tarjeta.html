@@ -1,126 +1,126 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Agregar Tarjeta | TwoMove</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agregar Tarjeta - TwoMove</title>
+    <link
+      rel="stylesheet"
+      href="{% static 'payments/css/agregar_tarjeta.css' %}"
+    />
     <script src="https://js.stripe.com/v3/"></script>
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #f3f5f7;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background: #fff;
-            border-radius: 16px;
-            padding: 40px 60px;
-            text-align: center;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.1);
-            width: 400px;
-        }
-        h1 { color: #1d3557; }
-        p { color: #444; margin-bottom: 25px; }
-        #card-element {
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 20px;
-        }
-        button {
-            background: #457b9d;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        button:hover { background: #1d3557; }
-        .mensaje { margin-top: 20px; }
-        a.volver {
-            display: block;
-            margin-top: 25px;
-            color: #457b9d;
-            text-decoration: none;
-        }
-        a.volver:hover { text-decoration: underline; }
-    </style>
-</head>
-<body>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">
+          <img
+            src="{% static 'users/images/logo.png' %}"
+            alt="TwoMove"
+            onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:45px;height:45px;background:#2cb5a0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:1.5rem;font-weight:600;\'>T</div>'"
+          />
+        </div>
+        <button class="close-sidebar" id="closeSidebar">✕</button>
+      </div>
 
-<div class="container">
-    <h1>💳 Agregar Tarjeta</h1>
-    <p>Ingresa los datos de tu tarjeta de forma segura.</p>
+      <nav class="sidebar-nav">
+        <a href="{% url 'users:dashboard' %}" class="nav-item">
+          <span class="icon">🏠</span>
+          <span>Inicio</span>
+        </a>
+        <a href="{% url 'menu_pagos' %}" class="nav-item">
+          <span class="icon">💳</span>
+          <span>Saldo y Recargas</span>
+        </a>
+        <a href="{% url 'rentals:start_trip_test' %}" class="nav-item">
+          <span class="icon">🚴</span>
+          <span>Mis Viajes</span>
+        </a>
+        <a href="{% url 'rentals:reservation_test' %}" class="nav-item">
+          <span class="icon">📅</span>
+          <span>Reservar</span>
+        </a>
+        <a href="{% url 'rentals:trip_history' %}" class="nav-item">
+          <span class="icon">📊</span>
+          <span>Historial</span>
+        </a>
+      </nav>
 
-    <form id="form-tarjeta">
-        <div id="card-element"></div>
-        <button id="btn-guardar" type="submit">Guardar Tarjeta</button>
-    </form>
+      <div class="sidebar-footer">
+        <a href="{% url 'users:logout' %}" class="logout-btn">
+          <span class="icon">🚪</span>
+          <span>Cerrar Sesión</span>
+        </a>
+      </div>
+    </aside>
 
-    <div id="mensaje" class="mensaje"></div>
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="dashboard-header">
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <div class="header-right">
+          <div class="user-info">
+            <span class="user-name">{{ user.nombre|default:"Usuario" }}</span>
+          </div>
+        </div>
+      </header>
 
-    <a href="{% url 'menu_pagos' %}" class="volver">⬅ Volver al menú</a>
-</div>
+      <!-- Content -->
+      <div class="content-wrapper">
+        <div class="card-container">
+          <div class="card-header">
+            <div class="header-icon">💳</div>
+            <h1>Agregar Tarjeta</h1>
+            <p class="subtitle">
+              Registra tu tarjeta de forma segura con Stripe
+            </p>
+          </div>
 
-<script>
-    // Inicializamos Stripe con la clave pública desde Django
-    const stripe = Stripe("{{ stripe_public_key }}");
-    const elements = stripe.elements();
-    const cardElement = elements.create('card', { hidePostalCode: true });
-    cardElement.mount('#card-element');
+          <form id="form-tarjeta" class="card-form">
+            <div class="form-section">
+              <label for="card-element">Datos de la Tarjeta</label>
+              <div id="card-element" class="card-element"></div>
+              <div id="card-errors" class="card-errors"></div>
+            </div>
 
-    const form = document.getElementById('form-tarjeta');
-    const mensaje = document.getElementById('mensaje');
+            <button id="btn-guardar" type="submit" class="btn-primary">
+              <span class="btn-icon">💾</span>
+              <span>Guardar Tarjeta</span>
+            </button>
+          </form>
 
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        document.getElementById('btn-guardar').disabled = true;
+          <div id="mensaje" class="mensaje"></div>
 
-        // Validamos la tarjeta con Stripe (SetupIntent)
-        const { setupIntent, error } = await stripe.confirmCardSetup(
-            "{{ client_secret }}", {
-                payment_method: {
-                    card: cardElement,
-                    billing_details: { name: "{{ request.user.username }}" }
-                }
-            }
-        );
+          <div class="back-link">
+            <a href="{% url 'menu_pagos' %}" class="btn-back">
+              <span>←</span>
+              <span>Volver al menú de pagos</span>
+            </a>
+          </div>
 
-        if (error) {
-            mensaje.innerHTML = `<p style="color:red;">❌ ${error.message}</p>`;
-            document.getElementById('btn-guardar').disabled = false;
-        } else {
-            // Enviamos el payment_method_id al backend Django
-            fetch("{% url 'guardar_tarjeta' %}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": "{{ csrf_token }}"
-                },
-                body: JSON.stringify({
-                    payment_method_id: setupIntent.payment_method
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.mensaje) {
-                    mensaje.innerHTML = `<p style="color:green;">✅ ${data.mensaje}</p>`;
-                } else {
-                    mensaje.innerHTML = `<p style="color:red;">❌ ${data.error}</p>`;
-                }
-                document.getElementById('btn-guardar').disabled = false;
-            })
-            .catch(err => {
-                mensaje.innerHTML = `<p style="color:red;">❌ Error de conexión con el servidor.</p>`;
-                document.getElementById('btn-guardar').disabled = false;
-            });
-        }
-    });
-</script>
-</body>
+          <!-- Security Info -->
+          <div class="security-info">
+            <div class="security-icon">🔒</div>
+            <div class="security-text">
+              <strong>Transacción segura</strong>
+              <p>Tus datos están protegidos con encriptación SSL de 256 bits</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // Pasar variables de Django a JavaScript
+      window.stripePublicKey = "{{ stripe_public_key }}";
+      window.clientSecret = "{{ client_secret }}";
+      window.csrfToken = "{{ csrf_token }}";
+      window.userName = "{{ request.user.nombre|default:request.user.nombre }}";
+      window.guardarTarjetaUrl = "{% url 'guardar_tarjeta' %}";
+    </script>
+    <script src="{% static 'payments/js/agregar_tarjeta.js' %}"></script>
+  </body>
 </html>
