@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib import messages  # Para mensajes flash
 
-from .services.recargar_saldo_service import RecargarSaldoService
+from .services.recharge_balance_service import RecargarSaldoService
 from .services.stripe_service import crear_setup_intent
 from .models import MetodoTarjeta
 

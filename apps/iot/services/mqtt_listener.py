@@ -7,7 +7,7 @@ import paho.mqtt.client as mqtt
 from datetime import datetime
 
 # ============================================================
-# 🧩 Inicialización del entorno Django
+#  Inicialización del entorno Django
 # ============================================================
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PROJECT_DIR = os.path.dirname(BASE_DIR)

@@ -11,27 +11,27 @@ app_name = "rentals"
 
 urlpatterns = [
     # ---------------------------------------------------
-    # 🌐 Página principal del módulo
+    #  Página principal del módulo
     # ---------------------------------------------------
     path('', views.index, name='rentals_index'),
 
     # ---------------------------------------------------
-    # 🧩 Páginas HTML de prueba
+    #  Páginas HTML de prueba
     # ---------------------------------------------------
-    path('test/reservation/', views.ReservationTestView.as_view(), name='reservation_test'),
-    path('test/cancel_reservation/', views.CancelReservationTestView.as_view(), name='cancel_reservation_test'),
+    path('/reservation/', views.ReservationTestView.as_view(), name='reservation_test'),
+    path('/cancel_reservation/', views.CancelReservationTestView.as_view(), name='cancel_reservation_test'),
     path('reservation/<int:rental_id>/cancel/', views.cancel_reservation_view, name='cancel_reservation'),
-    path('test/start_trip/', views.StartTripTestView.as_view(), name='start_trip_test'),
-    path('test/trip-end/', views.TripEndPageView.as_view(), name='trip_end_page'),
-    path('test/trip-history/', views.trip_history_view, name='trip_history'),    
+    path('/start_trip/', views.StartTripTestView.as_view(), name='start_trip_test'),
+    path('/trip-end/', views.TripEndPageView.as_view(), name='trip_end_page'),
+    path('/trip-history/', views.trip_history_view, name='trip_history'),    
 
     # ---------------------------------------------------
-    # ⚙️ Endpoint API HTML (TripEnd desde formulario)
+    #  Endpoint API HTML (TripEnd desde formulario)
     # ---------------------------------------------------
     path('api/trip-end/', views.TripEndAPI.as_view(), name='trip_end_api'),
 
     # ---------------------------------------------------
-    # 🚀 API REST principal (ViewSet)
+    #  API REST principal (ViewSet)
     # ---------------------------------------------------
     path('api/', include(router.urls)),
 ]

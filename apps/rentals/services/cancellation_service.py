@@ -65,7 +65,7 @@ class CancellationService:
                 # Aquí podrías implementar refund real si tienes payment_intent_id
                 pass
 
-        # 📩 Enviar correo de notificación
+        #  Enviar correo de notificación
         CancellationService._enviar_correo_cancelacion(user, rental, reason)
 
         print(f"❌ Reserva #{rental.id} cancelada correctamente por {user.email}")
@@ -81,10 +81,10 @@ class CancellationService:
         }
 
     # -----------------------------------------------------------
-    # 📧 Envío de correo de cancelación
+    #  Envío de correo de cancelación
     # -----------------------------------------------------------
 # -----------------------------------------------------------
-    # 📧 Envío de correo de cancelación
+    #  Envío de correo de cancelación
     # -----------------------------------------------------------
     @staticmethod
     def _enviar_correo_cancelacion(usuario, rental, motivo=""):

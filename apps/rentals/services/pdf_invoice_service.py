@@ -3,7 +3,14 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle,
+    Image,
+)
 from reportlab.pdfgen import canvas
 from datetime import datetime
 
@@ -56,72 +63,67 @@ class PDFInvoiceService:
         elements = []
 
         # ============================
-        # ENCABEZADO CON LOGO Y TÍTULO
+        # ENCABEZADO CORPORATIVO
         # ============================
-        header_data = []
-        
-        try:
-            # Intenta cargar el logo (ajusta la ruta según tu proyecto)
-            logo_path = "static/users/images/logo.png"
-            logo = Image(logo_path, width=1.2 * inch, height=1.2 * inch)
-            header_data.append([logo, ""])
-        except Exception:
-            # Si no hay logo, espacio vacío
-            header_data.append(["", ""])
+        header_table_data = []
 
-        header_table = Table(header_data, colWidths=[2 * inch, 4.5 * inch])
+        try:
+            logo_path = "static/users/images/logo.png"
+            logo = Image(logo_path, width=1.5 * inch, height=1.5 * inch)
+        except:
+            logo = ""
+
+        company_info = Paragraph(
+            """
+            <para align="right">
+            <b><font size=14 color="#2D3748">TwoMove SAS</font></b><br/>
+            <font size=10 color="#4A5568">Sistema de Movilidad Urbana Inteligente</font><br/>
+            <font size=9 color="#4A5568">www.twomove.co<br/>soporte@twomove.co</font>
+            </para>
+            """,
+            styles["Normal"]
+        )
+
+        header_table_data.append([logo, company_info])
+
+        header_table = Table(header_table_data, colWidths=[2 * inch, 4.8 * inch])
         header_table.setStyle(TableStyle([
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+            ('TOPPADDING', (0, 0), (-1, -1), 12),
+            ('LINEBELOW', (0, 0), (-1, 0), 1, colors.HexColor("#CBD5E0"))
         ]))
         elements.append(header_table)
-        elements.append(Spacer(1, 10))
+        elements.append(Spacer(1, 20))
 
-        # Título principal
-        title_style = ParagraphStyle(
-            "CustomTitle",
-            parent=styles["Heading1"],
-            fontSize=24,
-            textColor=colors.HexColor("#38a169"),
-            spaceAfter=6,
-            alignment=0,
-            fontName="Helvetica-Bold"
-        )
-        elements.append(Paragraph("FACTURA DE VIAJE", title_style))
+        # Título
+        elements.append(Paragraph(
+            "<b><font size=22 color='#2D3748'>FACTURA DE VIAJE</font></b>",
+            styles["Title"]
+        ))
+        elements.append(Spacer(1, 6))
 
-        # Subtítulo
-        subtitle_style = ParagraphStyle(
-            "Subtitle",
-            parent=styles["Normal"],
-            fontSize=11,
-            textColor=colors.HexColor("#718096"),
-            spaceAfter=20,
-        )
-        elements.append(Paragraph("Sistema de Movilidad Urbana TwoMove", subtitle_style))
-        
-        # Línea separadora verde
-        elements.append(Spacer(1, 5))
-        line_table = Table([["", ""]], colWidths=[6.6 * inch, 0.1 * inch])
-        line_table.setStyle(TableStyle([
-            ('LINEABOVE', (0, 0), (-1, 0), 3, colors.HexColor("#38a169")),
-        ]))
-        elements.append(line_table)
-        elements.append(Spacer(1, 15))
+        elements.append(Paragraph(
+            "<font size=11 color='#718096'>Comprobante de servicio - TwoMove</font>",
+            styles["Normal"]
+        ))
+        elements.append(Spacer(1, 20))
 
         # ============================
-        # INFORMACIÓN DE FACTURA Y CLIENTE
+        # INFORMACIÓN DE FACTURA & CLIENTE
         # ============================
         info_header_style = ParagraphStyle(
             "InfoHeader",
             parent=styles["Normal"],
             fontSize=10,
-            textColor=colors.HexColor("#2d3748"),
+            textColor=colors.HexColor("#2D3748"),
             fontName="Helvetica-Bold",
-            spaceAfter=8,
+            spaceAfter=6,
         )
-        
+
         fecha_actual = datetime.now().strftime('%d de %B de %Y, %I:%M %p')
-        
+
         info_data = [
             [
                 Paragraph("<b>INFORMACIÓN DE FACTURA</b>", info_header_style),
@@ -143,21 +145,21 @@ class PDFInvoiceService:
 
         info_table = Table(info_data, colWidths=[3.3 * inch, 3.3 * inch])
         info_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#f7fafc")),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-            ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor("#2d3748")),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#EDF2F7")),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor("#2D3748")),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, -1), 9),
-            ('TOPPADDING', (0, 0), (-1, -1), 8),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-            ('LEFTPADDING', (0, 0), (-1, -1), 10),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 10),
-            ('BOX', (0, 0), (-1, -1), 1, colors.HexColor("#e2e8f0")),
-            ('LINEBELOW', (0, 0), (-1, 0), 1, colors.HexColor("#e2e8f0")),
+            ('TOPPADDING', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+            ('LEFTPADDING', (0, 0), (-1, -1), 12),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+            ('BOX', (0, 0), (-1, -1), 1, colors.HexColor("#CBD5E0")),
+            ('LINEBELOW', (0, 0), (-1, 0), 1, colors.HexColor("#CBD5E0")),
         ]))
         elements.append(info_table)
-        elements.append(Spacer(1, 20))
+        elements.append(Spacer(1, 25))
 
         # ============================
         # DETALLES DEL VIAJE
@@ -166,57 +168,30 @@ class PDFInvoiceService:
             "SectionHeader",
             parent=styles["Heading2"],
             fontSize=14,
-            textColor=colors.HexColor("#2d3748"),
-            spaceAfter=10,
+            textColor=colors.HexColor("#2D3748"),
+            spaceAfter=12,
             fontName="Helvetica-Bold"
         )
         elements.append(Paragraph("DETALLES DEL VIAJE", section_style))
 
-        # Formatear fechas
         hora_inicio = rental.hora_inicio.strftime('%d/%m/%Y %I:%M %p') if rental.hora_inicio else "N/A"
         hora_fin = rental.hora_fin.strftime('%d/%m/%Y %I:%M %p') if rental.hora_fin else "N/A"
 
         detail_data = [
-            [
-                Paragraph("<b>Concepto</b>", styles["Normal"]),
-                Paragraph("<b>Detalle</b>", styles["Normal"])
-            ],
-            [
-                Paragraph("🕐 Hora de inicio", styles["Normal"]),
-                Paragraph(hora_inicio, styles["Normal"])
-            ],
-            [
-                Paragraph("🏁 Hora de finalización", styles["Normal"]),
-                Paragraph(hora_fin, styles["Normal"])
-            ],
-            [
-                Paragraph("⏱️ Duración total", styles["Normal"]),
-                Paragraph(f"<b>{duracion_minutos:.1f} minutos</b>", styles["Normal"])
-            ],
-            [
-                Paragraph("📍 Estación de origen", styles["Normal"]),
-                Paragraph(rental.estacion_origen.nombre if rental.estacion_origen else "N/A", styles["Normal"])
-            ],
-            [
-                Paragraph("🎯 Estación de destino", styles["Normal"]),
-                Paragraph(
-                    rental.estacion_destino.nombre if rental.estacion_destino else "🚨 Fuera de estación",
-                    styles["Normal"]
-                )
-            ],
-            [
-                Paragraph("🚲 Bicicleta asignada", styles["Normal"]),
-                Paragraph(rental.bike.numero_serie if rental.bike else "N/A", styles["Normal"])
-            ],
-            [
-                Paragraph("💳 Método de pago", styles["Normal"]),
-                Paragraph(rental.metodo_pago.replace('_', ' ').title(), styles["Normal"])
-            ],
+            ["<b>Concepto</b>", "<b>Detalle</b>"],
+            ["🕐 Hora de inicio", hora_inicio],
+            ["🏁 Hora de finalización", hora_fin],
+            ["⏱️ Duración total", f"{duracion_minutos:.1f} minutos"],
+            ["📍 Estación de origen", rental.estacion_origen.nombre if rental.estacion_origen else "N/A"],
+            ["🎯 Estación de destino",
+                rental.estacion_destino.nombre if rental.estacion_destino else "🚨 Fuera de estación"],
+            ["🚲 Bicicleta asignada", rental.bike.numero_serie if rental.bike else "N/A"],
+            ["💳 Método de pago", rental.metodo_pago.replace('_', ' ').title()],
         ]
 
         detail_table = Table(detail_data, colWidths=[2.2 * inch, 4.4 * inch])
         detail_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#48bb78")),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#38A169")),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
@@ -225,13 +200,15 @@ class PDFInvoiceService:
             ('FONTSIZE', (0, 1), (-1, -1), 9),
             ('TOPPADDING', (0, 0), (-1, -1), 8),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-            ('LEFTPADDING', (0, 0), (-1, -1), 10),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 10),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor("#f7fafc")]),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#e2e8f0")),
+            ('LEFTPADDING', (0, 0), (-1, -1), 12),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [
+                colors.white, colors.HexColor("#F7FAFC")
+            ]),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E0")),
         ]))
         elements.append(detail_table)
-        elements.append(Spacer(1, 25))
+        elements.append(Spacer(1, 30))
 
         # ============================
         # RESUMEN DE COBRO
@@ -239,56 +216,33 @@ class PDFInvoiceService:
         elements.append(Paragraph("RESUMEN DE COBRO", section_style))
 
         costo_formateado = f"${costo_total:,.0f} COP"
-        
+
         total_data = [
-            [
-                Paragraph("<b>Concepto</b>", styles["Normal"]),
-                Paragraph("<b>Monto</b>", styles["Normal"])
-            ],
-            [
-                Paragraph("Costo del servicio", styles["Normal"]),
-                Paragraph(costo_formateado, styles["Normal"])
-            ],
-            [
-                Paragraph("IVA (0%)", styles["Normal"]),
-                Paragraph("$0 COP", styles["Normal"])
-            ],
-            [
-                Paragraph("Descuentos", styles["Normal"]),
-                Paragraph("$0 COP", styles["Normal"])
-            ],
-            [
-                "",
-                ""
-            ],
-            [
-                Paragraph("<b>TOTAL A PAGAR</b>", 
-                    ParagraphStyle("TotalLabel", parent=styles["Normal"], fontSize=12, fontName="Helvetica-Bold")),
-                Paragraph(f"<b>{costo_formateado}</b>",
-                    ParagraphStyle("TotalAmount", parent=styles["Normal"], fontSize=14, fontName="Helvetica-Bold", 
-                                 textColor=colors.HexColor("#38a169")))
-            ],
+            ["<b>Concepto</b>", "<b>Monto</b>"],
+            ["Costo del servicio", costo_formateado],
+            ["IVA (0%)", "$0 COP"],
+            ["Descuentos", "$0 COP"],
+            ["", ""],
+            ["<b>TOTAL A PAGAR</b>", f"<b><font color='#38A169'>{costo_formateado}</font></b>"],
         ]
 
         total_table = Table(total_data, colWidths=[4.6 * inch, 2 * inch])
         total_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#48bb78")),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#38A169")),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('BACKGROUND', (0, 5), (-1, 5), colors.HexColor("#f0fff4")),
-            ('ALIGN', (0, 0), (0, -1), 'LEFT'),
             ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 4), 9),
-            ('TOPPADDING', (0, 0), (-1, -1), 8),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-            ('LEFTPADDING', (0, 0), (-1, -1), 10),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 10),
-            ('ROWBACKGROUNDS', (0, 1), (-1, 4), [colors.white, colors.HexColor("#f7fafc")]),
-            ('GRID', (0, 0), (-1, 4), 0.5, colors.HexColor("#e2e8f0")),
-            ('BOX', (0, 5), (-1, 5), 2, colors.HexColor("#38a169")),
+            ('TOPPADDING', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+            ('LEFTPADDING', (0, 0), (-1, -1), 12),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+            ('BACKGROUND', (0, 5), (-1, 5), colors.HexColor("#F0FFF4")),
+            ('BOX', (0, 5), (-1, 5), 2, colors.HexColor("#38A169")),
+            ('FONTNAME', (0, 5), (-1, 5), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 5), (-1, 5), 14),
+            ('GRID', (0, 0), (-1, 4), 0.5, colors.HexColor("#CBD5E0")),
         ]))
         elements.append(total_table)
-        elements.append(Spacer(1, 30))
+        elements.append(Spacer(1, 35))
 
         # ============================
         # INFORMACIÓN ADICIONAL
@@ -297,26 +251,26 @@ class PDFInvoiceService:
             "InfoBox",
             parent=styles["Normal"],
             fontSize=9,
-            textColor=colors.HexColor("#4a5568"),
-            leading=12,
-            spaceAfter=5,
+            textColor=colors.HexColor("#4A5568"),
+            leading=13,
+            spaceAfter=4,
         )
-        
-        info_adicional = [
-            ["<b>📋 INFORMACIÓN IMPORTANTE</b>"],
-            ["• Esta factura es un comprobante de pago digital generado automáticamente."],
-            ["• El cobro se realizó mediante el método de pago registrado en su cuenta."],
-            ["• Para consultas o reclamos, contáctenos a soporte@twomove.co"],
-            ["• Este documento no requiere firma ni sello para su validez."],
+
+        info_text = [
+            "<b>📋 INFORMACIÓN IMPORTANTE</b>",
+            "• Esta factura es un comprobante de pago digital generado automáticamente.",
+            "• El cobro se realizó mediante el método de pago registrado en su cuenta.",
+            "• Para consultas o reclamos, contáctenos a soporte@twomove.co",
+            "• Este documento no requiere firma ni sello para su validez.",
         ]
-        
-        for line in info_adicional:
-            elements.append(Paragraph(line[0], info_box_style))
-        
-        elements.append(Spacer(1, 20))
+
+        for line in info_text:
+            elements.append(Paragraph(line, info_box_style))
+
+        elements.append(Spacer(1, 30))
 
         # ============================
-        # PIE DE PÁGINA
+        # PIE DE PÁGINA PREMIUM
         # ============================
         footer_style = ParagraphStyle(
             "Footer",
@@ -324,17 +278,23 @@ class PDFInvoiceService:
             fontSize=9,
             textColor=colors.HexColor("#718096"),
             alignment=1,
-            leading=12,
+            leading=13,
         )
-        footer_text = (
-            "<b>Gracias por viajar con TwoMove 🚴‍♂️</b><br/>"
-            "Sistema de Movilidad Urbana Inteligente<br/>"
-            "www.twomove.co | soporte@twomove.co<br/>"
-            f"© {datetime.now().year} TwoMove SAS - Todos los derechos reservados"
-        )
+
+        footer_text = f"""
+        <para align="center">
+        <font size=11 color="#2D3748"><b>Gracias por viajar con TwoMove</b></font><br/>
+        <font size=9 color="#718096">
+        Sistema de Movilidad Urbana Inteligente<br/>
+        www.twomove.co | soporte@twomove.co<br/>
+        © {datetime.now().year} TwoMove SAS – Todos los derechos reservados
+        </font>
+        </para>
+        """
+
         elements.append(Paragraph(footer_text, footer_style))
 
-        # Generar PDF con canvas personalizado
+        # GENERAR PDF
         doc.build(elements, canvasmaker=NumberedCanvas)
         buffer.seek(0)
         return buffer

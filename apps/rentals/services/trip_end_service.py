@@ -11,7 +11,7 @@ from apps.stations.models import Station
 from apps.transactions.models import WalletTransaccion
 from apps.wallet.models import Wallet
 
-# ✅ Patrón Decorator para cálculo de costos
+# Decorators de costos
 from apps.rentals.services.cost_decorator import (
     CostoBase,
     CostoPorTiempoExtra,
@@ -19,8 +19,11 @@ from apps.rentals.services.cost_decorator import (
 )
 
 from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
 import io
+
 
 
 class TripEndService:
@@ -45,15 +48,11 @@ class TripEndService:
             raise
 
         try:
-            # ------------------------------------------------------------------
-            # Validaciones iniciales
-            # ------------------------------------------------------------------
             if rental.estado != "activo":
                 raise ValueError(f"El viaje no está activo (estado actual: {rental.estado}).")
 
             bike = rental.bike
 
-            # ✅ Si no se envía estación destino, se usa la definida al reservar
             estacion_destino = None
             if estacion_destino_id:
                 estacion_destino = Station.objects.filter(pk=estacion_destino_id).first()
@@ -62,14 +61,9 @@ class TripEndService:
             elif rental.estacion_destino:
                 estacion_destino = rental.estacion_destino
 
-            # ------------------------------------------------------------------
-            # Cálculo de duración y costos
-            # ------------------------------------------------------------------
             hora_fin = timezone.now()
             duracion = (hora_fin - rental.hora_inicio).total_seconds() / 60
             duracion_min = float(f"{duracion:.1f}")
-
-            print(f"🕒 Duración calculada: {duracion_min} min")
 
             fuera_estacion = estacion_destino is None
 
@@ -82,11 +76,7 @@ class TripEndService:
                 duracion_min=duracion_min,
                 fuera_estacion=fuera_estacion,
             )
-            print(f"💰 Costo total calculado: {costo_total}")
 
-            # ------------------------------------------------------------------
-            # Actualizar Rental y Bicicleta
-            # ------------------------------------------------------------------
             rental.estado = "finalizado"
             rental.hora_fin = hora_fin
             rental.estacion_destino = estacion_destino
@@ -97,16 +87,13 @@ class TripEndService:
             bike.station = estacion_destino if estacion_destino else bike.station
             bike.save(update_fields=["estado", "station"])
 
-            # ------------------------------------------------------------------
-            # Registrar transacción Wallet
-            # ------------------------------------------------------------------
             wallet = Wallet.objects.filter(usuario=usuario).first()
             if wallet:
                 nuevo_saldo = wallet.balance - Decimal(costo_total)
 
                 WalletTransaccion.objects.create(
                     wallet=wallet,
-                    tipo="PAGO",  # ✅ tipo válido según tu modelo
+                    tipo="PAGO",
                     monto=-Decimal(costo_total),
                     descripcion=f"Pago por finalización de viaje #{rental.id}",
                     saldo_resultante=nuevo_saldo,
@@ -115,11 +102,7 @@ class TripEndService:
 
                 wallet.balance = nuevo_saldo
                 wallet.save(update_fields=["balance"])
-                print(f"💳 Transacción registrada en wallet. Nuevo saldo: {wallet.balance}")
 
-            # ------------------------------------------------------------------
-            # Generar y enviar factura
-            # ------------------------------------------------------------------
             print("📄 Generando factura PDF…")
             factura_pdf = TripEndService._generar_factura_pdf(rental, costo_total, duracion_min)
 
@@ -140,39 +123,75 @@ class TripEndService:
             print(f"❌ Error general en TripEndService.end_trip: {e}")
             raise
 
-    # ------------------------------------------------------------------
-    # 📄 Generación de factura PDF
-    # ------------------------------------------------------------------
     @staticmethod
     def _generar_factura_pdf(rental, costo_total, duracion):
         buffer = io.BytesIO()
-        p = canvas.Canvas(buffer, pagesize=letter)
-        p.setFont("Helvetica", 12)
 
-        p.drawString(100, 750, "Factura del Servicio TwoMove")
-        p.drawString(100, 730, f"Usuario: {rental.usuario.email}")
-        p.drawString(100, 710, f"Bicicleta: {getattr(rental, 'bike_serial_reservada', None) or rental.bike.numero_serie}")
-        p.drawString(100, 690, f"Duración: {duracion:.1f} minutos")
-        p.drawString(100, 670, f"Costo total: ${Decimal(costo_total):.2f}")
-        p.drawString(100, 650, f"Estación destino: {rental.estacion_destino.nombre if rental.estacion_destino else 'N/A'}")
-        p.drawString(100, 630, f"Fecha: {rental.hora_fin.strftime('%Y-%m-%d %H:%M:%S')}")
+        doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=40, leftMargin=40, topMargin=50, bottomMargin=40)
+        styles = getSampleStyleSheet()
+        elements = []
 
-        p.showPage()
-        p.save()
+        # TÍTULO
+        title = Paragraph("<b><font size=18>Factura del Servicio TwoMove</font></b>", styles["Title"])
+        elements.append(title)
+        elements.append(Spacer(1, 12))
+
+        subtitle = Paragraph(
+            f"<font size=11 color='#555'>Generado automáticamente el {rental.hora_fin.strftime('%d/%m/%Y %H:%M')}</font>",
+            styles["Normal"]
+        )
+        elements.append(subtitle)
+        elements.append(Spacer(1, 20))
+
+        # TABLA DE DETALLES
+        data = [
+            ["Campo", "Valor"],
+            ["Usuario", rental.usuario.email],
+            ["Bicicleta", getattr(rental, "bike_serial_reservada", None) or rental.bike.numero_serie],
+            ["Duración", f"{duracion:.1f} minutos"],
+            ["Costo total", f"${Decimal(costo_total):,.0f}"],
+            ["Estación destino", rental.estacion_destino.nombre if rental.estacion_destino else "N/A"],
+            ["Fecha", rental.hora_fin.strftime("%Y-%m-%d %H:%M:%S")],
+        ]
+
+        table = Table(data, colWidths=[150, 350])
+        table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#38A169")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 12),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+            ("FONTSIZE", (0, 1), (-1, -1), 10),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.HexColor("#F7FAFC")),
+        ]))
+
+        elements.append(table)
+        elements.append(Spacer(1, 20))
+
+        footer = Paragraph(
+            "<font size=10 color='#777'>TwoMove - Sistema de Movilidad Urbana Inteligente</font>",
+            styles["Normal"]
+        )
+        elements.append(footer)
+
+        doc.build(elements)
         buffer.seek(0)
         return buffer
 
-    # ------------------------------------------------------------------
-    # 📧 Envío de correo con factura PDF adjunta
-    # ------------------------------------------------------------------
+
+
+    # ----------------------------------------------------------------------
+    # Envío del correo
+    # ----------------------------------------------------------------------
     @staticmethod
     def _enviar_correo_factura(usuario, rental, costo_total, duracion, pdf_buffer, fuera_estacion):
         try:
-            # ✅ Contexto completo para el template
             context = {
                 "usuario": usuario,
                 "rental": rental,
-                "costo_total": f"${round(float(costo_total), 2):,.0f}",  # Formato: $17,500
+                "costo_total": f"${round(float(costo_total), 2):,.0f}",
                 "duracion": round(duracion, 1),
                 "fecha_fin": rental.hora_fin.strftime('%d de %B de %Y, %I:%M %p'),
                 "fuera_estacion": fuera_estacion,
@@ -192,8 +211,6 @@ class TripEndService:
                 "application/pdf"
             )
             msg.send(fail_silently=False)
-
-            print(f"📩 Correo con factura enviado a {usuario.email}")
 
         except Exception as e:
             print(f"⚠️ Error al enviar correo de factura: {e}")
