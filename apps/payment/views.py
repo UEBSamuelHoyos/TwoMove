@@ -7,6 +7,7 @@ from rest_framework import status
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib import messages  # Para mensajes flash
+from apps.payment.services.encryption_service import EncryptionService
 
 from .services.recharge_balance_service import RecargarSaldoService
 from .services.stripe_service import crear_setup_intent
@@ -96,23 +97,35 @@ def guardar_tarjeta(request):
         if not customer_id:
             raise Exception("❌ El método de pago no tiene un cliente (customer_id) asociado en Stripe.")
 
+        # -----------------------------
+        #  CIFRAR DATOS SENSIBLES
+        # -----------------------------
+        brand_enc = EncryptionService.encrypt(metodo['card']['brand'])
+        last4_enc = EncryptionService.encrypt(metodo['card']['last4'])
+        exp_month_enc = EncryptionService.encrypt(str(metodo['card']['exp_month']))
+        exp_year_enc = EncryptionService.encrypt(str(metodo['card']['exp_year']))
+
         # Guardar en base de datos
         MetodoTarjeta.objects.update_or_create(
             usuario=usuario,
             stripe_payment_method_id=payment_method_id,
             defaults={
                 "stripe_customer_id": customer_id,
-                "brand": metodo['card']['brand'],
-                "last4": metodo['card']['last4'],
-                "exp_month": metodo['card']['exp_month'],
-                "exp_year": metodo['card']['exp_year']
+                "brand": brand_enc,
+                "last4": last4_enc,
+                "exp_month": exp_month_enc,
+                "exp_year": exp_year_enc
             }
         )
 
-        return Response({'mensaje': '✅ Tarjeta registrada correctamente.'}, status=status.HTTP_201_CREATED)
+        return Response(
+            {'mensaje': '✅ Tarjeta registrada correctamente.'},
+            status=status.HTTP_201_CREATED
+        )
 
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
